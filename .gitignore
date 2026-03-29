@@ -1,0 +1,30 @@
+# Dependencies
+node_modules/
+
+# Metro / build
+.expo/
+dist/
+build/
+
+# Native
+ios/Pods/
+*.xcworkspace/xcuserdata/
+*.xcodeproj/xcuserdata/
+android/app/build/
+android/build/
+.gradle/
+local.properties
+
+# Env / OS
+.env
+.env.*
+.DS_Store
+Thumbs.db
+
+# Logs / coverage
+npm-debug.log*
+coverage/
+
+# IDE
+.idea/
+.vscode/
