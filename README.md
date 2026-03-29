@@ -60,9 +60,101 @@ Muut npm-skriptit:
 - `npm run typecheck` — TypeScript (`tsc --noEmit`)
 - `npm run test` — Jest
 
-## CI
+## Git ja GitHub – työvirta (aloittelijalle)
 
-Push haaraan `main` ja pull requestit käynnistävät workflow’n `.github/workflows/ci.yml`: asennus, lint, typecheck ja testit.
+Tämä projekti elää Git-repositoriossa GitHubissa. **Päähaara** on `main`. Uudet ominaisuudet ja korjaukset tehdään omassa **haarassa** ja viedään takaisin `main`-haaraan **pull requestin** (PR) kautta.
+
+### Sanasto (lyhyesti)
+
+| Termi | Mitä se tarkoittaa |
+|--------|---------------------|
+| **Repo** | Projektin versionhallinta (tiedostot + historia). |
+| **Commit** | Tallennettu tilanne: mitä muuttui ja lyhyt viesti (`git commit`). |
+| **Haara (branch)** | Rinnakkainen kehityslinja, esim. `MOB-16-kuvaus` tai `feature/login`. |
+| **Push** | Lähetät paikalliset commitit GitHubiin (`git push`). |
+| **Pull request (PR)** | Pyyntö yhdistää haarasi `main`-haaraan; keskustelu, tarkistus ja CI ajetaan täällä. |
+| **Merge** | Hyväksytty PR yhdistää muutokset `main`-haaraan. |
+
+### Kerta-asiat: kloonaa repo
+
+```bash
+git clone <repo-url>
+cd mob-project
+npm install
+```
+
+`<repo-url>` on GitHub-repon osoite (HTTPS tai SSH), jonka saat reposta **Code**-napista.
+
+### Päivittäinen työ: uusi ominaisuus tai korjaus
+
+1. **Päivitä `main` paikallisesti** (aina ennen uutta työtä tai ennen uuden haaran tekoa):
+
+   ```bash
+   git checkout main
+   git pull origin main
+   ```
+
+2. **Luo uusi haara** (nimeä selkeästi, esim. tiketin mukaan):
+
+   ```bash
+   git checkout -b MOB-16-kuvaava-nimi
+   ```
+
+3. **Tee muutokset** editorissa. Testaa paikallisesti:
+
+   ```bash
+   npm run lint
+   npm run typecheck
+   npm run test
+   ```
+
+   Nämä samat vaiheet ajetaan myös GitHubissa (katso CI alla).
+
+4. **Tallenna muutokset**:
+
+   ```bash
+   git status                 # näet mitä tiedostoja muuttui
+   git add .                  # tai git add polku/tiedosto
+   git commit -m "Lyhyt kuvaava viesti suomeksi tai englanniksi"
+   ```
+
+5. **Lähetä haara GitHubiin** (ensimmäisellä kerralla):
+
+   ```bash
+   git push -u origin MOB-16
+   ```
+
+   Seuraavilla kerroilla samaan haaraan riittää usein `git push`.
+
+6. **GitHubissa**: avaa **Pull requests** → **New pull request**, valitse oma haara → `main`, täytä otsikko ja kuvaus → luo PR.
+
+7. **Odota CI:tä** (vihreä = ok). Korjaa mahdolliset virheet, commitoi ja pushaa samaan haaraan – PR päivittyy automaattisesti.
+
+8. Kun PR on hyväksytty ja **merge** tehty, voit paikallisesti:
+
+   ```bash
+   git checkout main
+   git pull origin main
+   ```
+
+### Mitä vältää
+
+- Älä commitoi **salaisuuksia** (API-avaimia, `firebaseConfig`-sisältöä sellaisenaan jos se sisältää oikeita avaimia). Käytä paikallisia ympäristömuuttujia tai esimerkkitiedostoja, jos niitä projektiin lisätään.
+- Älä työnnä suoraan `main`-haaraan ilman tiimin käytäntöä – käytä PR:ää, jotta CI ja katselmointi tulevat mukaan.
+
+### Konfliktit (lyhyesti)
+
+Jos `git pull` tai merge sanoo **conflict**: samaa tiedostoa on muutettu kahdessa haarassa. Avaa merkityt tiedostot, ratkaise `<<<<<<<` / `=======` / `>>>>>>>` -kohdat, tallenna, sitten `git add` ja `git commit`. Tarvittaessa pyydä apua tiimiltä ensimmäisillä kerroilla.
+
+## CI (GitHub Actions)
+
+Push **haaraan `main`** ja **pull requestit** käynnistävät workflow’n tiedostossa [`.github/workflows/ci.yml`](.github/workflows/ci.yml):
+
+1. Koodi checkoutataan palvelimelle.
+2. Asennetaan riippuvuudet: `npm ci` (sama kuin `npm install`, mutta lukittu `package-lock.json`:n mukaan).
+3. Ajetaan: `npm run lint`, `npm run typecheck`, `npm run test`.
+
+Jokin näistä epäonnistuu → workflow näkyy **punaisena** PR:ssä; korjaa koodi ja pushaa uudelleen. **Deploya** tai sovelluksen buildia tämä workflow ei tee (vain laadun tarkistus).
 
 ## TODO / seuraavat vaiheet
 
