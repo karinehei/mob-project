@@ -1,0 +1,9 @@
+# Copy this file to local.properties (same folder) and fix the path.
+# local.properties is gitignored — do not commit real paths or secrets.
+
+# --- WSL (Gradle ajetaan Linuxissa, SDK Windowsissa / Android Studio) ---
+# Korvaa YOUR_USER Windows-käyttäjänimelläsi
+sdk.dir=/mnt/c/Users/YOUR_USER/AppData/Local/Android/Sdk
+
+# --- Vain Windows (PowerShell / CMD) ---
+# sdk.dir=C\:\\Users\\YOUR_USER\\AppData\\Local\\Android\\Sdk

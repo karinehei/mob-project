@@ -1,0 +1,15 @@
+diff --git a/node_modules/@react-native/community-cli-plugin/dist/commands/start/runServer.js b/node_modules/@react-native/community-cli-plugin/dist/commands/start/runServer.js
+old mode 100644
+new mode 100755
+index 91cd2ff..99088a2
+--- a/node_modules/@react-native/community-cli-plugin/dist/commands/start/runServer.js
++++ b/node_modules/@react-native/community-cli-plugin/dist/commands/start/runServer.js
+@@ -142,7 +142,7 @@ async function runServer(_argv, ctx, args) {
+       communityMiddleware,
+       _cliServerApi.indexPageMiddleware,
+       middleware,
+-    ],
++    ].filter(Boolean),
+     websocketEndpoints: {
+       ...communityWebsocketEndpoints,
+       ...websocketEndpoints,
