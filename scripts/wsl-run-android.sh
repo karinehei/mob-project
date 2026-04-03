@@ -6,6 +6,11 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 # shellcheck source=/dev/null
 source "$ROOT/scripts/wsl-android-env.sh"
 
+# Windows editors often save CRLF; #!/bin/sh\r makes WSL fail to exec the wrapper (ENOENT).
+if [[ -f "$ROOT/android/gradlew" ]]; then
+  sed -i 's/\r$//' "$ROOT/android/gradlew" 2>/dev/null || true
+fi
+
 cd "$ROOT/android"
 ./gradlew --stop || true
 cd "$ROOT"

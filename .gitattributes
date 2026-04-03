@@ -1,0 +1,4 @@
+# Shell scripts must use LF so WSL/bash does not break on CRLF (e.g. set -o pipefail).
+*.sh text eol=lf
+# Gradle wrapper is a POSIX script; CRLF breaks shebang under WSL → spawn ./gradlew ENOENT.
+android/gradlew text eol=lf
