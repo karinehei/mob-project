@@ -14,8 +14,8 @@ import { spacing } from '../theme/spacing';
 import { typography } from '../theme/typography';
 
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { RootStackParamList } from '../navigation/AppNavigator';
 
+import { RootStackParamList } from '../navigation/AppNavigator';
 type Props = NativeStackScreenProps<RootStackParamList, 'Home'>;
 
 const RATING_ROW_A = [0, 1, 2, 3, 4, 5] as const;
@@ -62,7 +62,7 @@ function RatingChip({ value, selected, onPress }: RatingChipProps): React.JSX.El
 /**
  * Entry screen shell. Layout aligned with sensory evaluation wireframe; no study flow yet.
  */
-export function HomeScreen(): React.JSX.Element {
+export default function HomeScreen({ navigation }: Props)  {
   // Local UI state only — replace with study flow / persistence later.
   const [selectedRating, setSelectedRating] = useState<number>(8);
 
@@ -140,29 +140,15 @@ export function HomeScreen(): React.JSX.Element {
         <View style={styles.footer}>
           <Pressable
             style={({ pressed }) => [styles.cta, pressed && styles.ctaPressed]}
-            onPress={() => {
-              /* TODO: navigate when stack / flow exists */
-            }}
+            onPress={() => navigation.navigate('Sample')}
             accessibilityRole="button"
             accessibilityLabel="Seuraava näkymä"
-          >
+            >
             <Text style={styles.ctaLabel}>Next screen</Text>
           </Pressable>
         </View>
       </View>
     </ScreenContainer>
-  );
-}
-
-export default function HomeScreen({ navigation }: Props) {
-  return (
-    <View>
-      <Text>Home Screen</Text>
-      <Button
-        title="Go to Sample"
-        onPress={() => navigation.navigate('Sample')}
-      />
-    </View>
   );
 }
 

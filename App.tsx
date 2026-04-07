@@ -7,7 +7,7 @@ import { colors } from './src/theme/colors';
 
 import { NavigationContainer } from '@react-navigation/native';
 
-import { AppNavigator } from './src/navigation/AppNavigator'
+import { AppNavigator } from './src/navigation/AppNavigator';
 
 /**
  * Application root. Wires status bar and navigation shell only; no business logic here.
