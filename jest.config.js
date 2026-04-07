@@ -1,10 +1,14 @@
 module.exports = {
     preset: 'react-native',
 
-
     transform: {
-      '^.+\\.(js|ts|tsx)$': 'ts-jest',
+        '^.+\\.(js|ts|tsx)$': 'babel-jest',
     },
-    setupFilesAfterEnv: ['<rootDir>/jest.setup.ts'],
-    testPathIgnorePatterns: ['/node_modules/', '/android/', '/ios/'],
+    transformIgnorePatterns: [
+        'node_modules/(?!(react-native|@react-native|@react-native-community)/)',
+    ],
+    transformIgnorePatterns: [
+        'node_modules/(?!(react-native|@react-native|react-native-linear-gradient)/)',
+      ],
+    moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
 };
