@@ -14,8 +14,8 @@ import { spacing } from '../theme/spacing';
 import { typography } from '../theme/typography';
 
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { RootStackParamList } from '../navigation/AppNavigator';
 
+import { RootStackParamList } from '../navigation/AppNavigator';
 type Props = NativeStackScreenProps<RootStackParamList, 'Home'>;
 
 const RATING_ROW_A = [0, 1, 2, 3, 4, 5] as const;
@@ -118,7 +118,7 @@ export default function HomeScreen({ navigation }: Props): React.JSX.Element {
             onPress={() => navigation.navigate('Sample')}
             accessibilityRole="button"
             accessibilityLabel="Seuraava näkymä"
-          >
+            >
             <Text style={styles.ctaLabel}>Next screen</Text>
           </Pressable>
         </View>
