@@ -2,6 +2,15 @@ apply plugin: "com.android.application"
 apply plugin: "org.jetbrains.kotlin.android"
 apply plugin: "com.facebook.react"
 
+// Transitive deps may pull androidx.core:1.17.x (needs compileSdk 36 + AGP 8.9+).
+// RN 0.76 uses AGP 8.6 / compileSdk 35 — keep core on a compatible line.
+configurations.configureEach {
+    resolutionStrategy {
+        force "androidx.core:core:1.16.0"
+        force "androidx.core:core-ktx:1.16.0"
+    }
+}
+
 /**
  * This is the configuration block to customize your React Native Android app.
  * By default you don't need to apply any configuration, just uncomment the lines you need.

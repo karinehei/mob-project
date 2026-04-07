@@ -7,6 +7,8 @@
     "android:wsl": "bash scripts/wsl-run-android.sh",
     "ios": "react-native run-ios",
     "start": "react-native start",
+    "start:verbose": "react-native start --verbose",
+    "start:wsl": "node scripts/metro-start-wsl.cjs",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "test": "jest",
