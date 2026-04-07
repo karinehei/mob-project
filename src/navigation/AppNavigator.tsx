@@ -4,7 +4,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 import HomeScreen from '../screens/HomeScreen';
 import SampleScreen from '../screens/SampleScreen';
-import EvaluationScreen from '../screens/EavluationScreen';
+import EvaluationScreen from '../screens/EvaluationScreen';
 import ResultScreen from '../screens/ResultScreen';
 
 export type RootStackParamList = {
