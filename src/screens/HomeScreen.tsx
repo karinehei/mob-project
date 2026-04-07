@@ -5,7 +5,6 @@ import {
   StyleSheet,
   Text,
   View,
-  Button,
 } from 'react-native';
 
 import { ScreenContainer } from '../components/ScreenContainer';
