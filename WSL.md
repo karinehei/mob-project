@@ -53,6 +53,60 @@ cd /mnt/d/amk/mob-project
 npm start
 ```
 
+**Jos rivi jää tyhjäksi heti `npm start` / `pkill` jälkeen:** usein **ei ole jumi**, vaan Metro indeksoi `node_modules`-puuta **drvfs**-levyllä (**5–15 min** ilman yhtään riviä on tavallista). Varmistus: **`npm run start:wsl`** (käyttää `node scripts/metro-start-wsl.cjs` — tulostaa heti, ohittaa hitaan `npm run` + bash -ketjun) tai **`npm run start:verbose`**.
+
+**Jos `npm run start:wsl` ei tulosta mitään edes minuutteihin:** `npm` itse voi olla jumissa drvfs:llä. Aja suoraan (ei `npm run`):
+```bash
+cd /mnt/d/amk/mob-project
+node scripts/metro-start-wsl.cjs
+```
+
+**Jos se “roikkuu” yhä pitkään (esim. 20+ min ilman yhtään verbose-riviä):** käytä käytännössä aina **Metron Windowsissa** (PowerShell, sama repo `D:\amk\mob-project` → `npm start`) ja **WSL vain** `npm run android:wsl`. Tämä on luotettavin yhdistelmä `/mnt/d`-polulla.
+
+**Paras pysyvä korjaus WSL-kehiin:** kopioi repo **ext4**:ään, esim. `cp -a /mnt/d/amk/mob-project ~/mob-project && cd ~/mob-project && npm install && npm start` — Metro on silloin normaalin nopea.
+
+### Metro “roikkuu” / ei tulosta mitään pitkään aikaan (repo Windows-levyllä)
+
+Kun projekti on polussa tyyliin `/mnt/d/...`, WSL käyttää **drvfs**-tiedostojärjestelmää. **Node + Metro** lukee `node_modules`-puusta valtavan määrän tiedostoja — ensimmäinen käynnistys voi kestää **useita minuutteja** ilman näkyvää tulostetta. Tämä ei ole välttämättä jumi, vaan hidasta levyä.
+
+**Mitä tehdä:**
+
+1. **Odota** 5–15 min tai aja verbose-tilassa, jotta näet edistymisen:
+   ```bash
+   cd /mnt/d/amk/mob-project
+   npm run start:verbose
+   ```
+   (Sama kuin `npx react-native start --verbose`.)
+2. **Nopein käytännön ratkaisu:** käynnistä Metro **Windowsissa** (PowerShell `D:\amk\mob-project`):
+   ```powershell
+   npm start
+   ```
+   ja pidä WSL vain Android-buildille (`npm run android:wsl`). Tarvittaessa emulaattorille: `adb reverse tcp:8081 tcp:8081` (Windows-ADB, jos Metro Windowsissa — usein ei tarvita samalla koneella).
+3. **Paras suorituskyky WSL-kehiin:** kloonaa tai kopioi repo **Linuxin kotihakemistoon** (ext4), esim. `~/src/mob-project`, ja aja `npm install` + `npm start` sieltä — Metro ja file watch ovat silloin normaalin nopeisia.
+
+### Metro ei reagoi — jopa Ctrl+C ei pysäytä (WSL + `/mnt/d/...`)
+
+Joskus Node/Metro jää **kernel-tason odotukseen** Windows-levyn yli (drvfs). Silloin prosessi ei välttämättä vastaa **Ctrl+C**:lle heti tai ollenkaan — terminaali näyttää jumissa.
+
+**Pysäytys:**
+
+1. **Turvallisin:** sulje se WSL-välilehti/ikkuna, jossa `npm start` pyörii (tai paina terminaalin roskakoria). Joskus riittää.
+
+2. **Tapa vain omat Node-prosessisi** — älä käytä sokkona `pkill -9 node`: se yrittää tappaa myös muiden käyttäjien / järjestelmän prosesseja ja saat `Operation not permitted`.
+   ```bash
+   ps -u "$(whoami)" -o pid,args | grep -E 'node|metro|react-native' | grep -v grep
+   kill -9 <PID>    # korvaa <PID> riviltä, joka on sinun Metron / npm start -prosessisi
+   ```
+   Vaihtoehtoisesti (vain omaan käyttäjään rajautuen):
+   ```bash
+   pkill -9 -u "$(whoami)" -f 'react-native start' || true
+   pkill -9 -u "$(whoami)" -f metro || true
+   ```
+
+3. **Windows (aina toimii, jos WSL jumittaa):** PowerShell: `wsl --shutdown` (sulkee kaikki WSL-jakelut — varo jos muu työ WSL:ssä kesken). Tai Tehtävienhallinta → **VmmemWSL**.
+
+**Kestävä ratkaisu:** **älä aja Metron `npm start` WSL:ssä** reposta, joka on `D:\…` → `/mnt/d/…`. Käynnistä Metro **Windows PowerShellissa** `D:\amk\mob-project` tai siirrä repo WSL:n **ext4**-levylle (`~`). Tämä välttää useimmat “ei reagoi” -tilanteet.
+
 Jos Metro kaatuu virheeseen `Cannot read properties of undefined (reading 'handle')` (`connect`-middleware), syy on RN 0.76.x / `cli-server-api` -yhdistelmässä: `indexPageMiddleware` puuttuu exporteista. Tässä repossa korjaus tehdään **`patch-package`**:lla (`postinstall` + `patches/@react-native+community-cli-plugin+0.76.5.patch`). Varmista että `npm install` on ajettu loppuun, jotta patch tulee voimaan.
 
 ## 5. Android SDK ja Gradle (`SDK location not found`)
