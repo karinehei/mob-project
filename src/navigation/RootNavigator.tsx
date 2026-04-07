@@ -1,14 +1,10 @@
 import React from 'react';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import HomeScreen from '../screens/HomeScreen';
-import { RootStackParamList } from './AppNavigator';
 
-const Stack = createNativeStackNavigator<RootStackParamList>();
+import { AppNavigator } from './AppNavigator';
 
+/**
+ * Top-level navigation shell — delegates to stack in AppNavigator.
+ */
 export function RootNavigator(): React.JSX.Element {
-  return (
-    <Stack.Navigator>
-      <Stack.Screen name="Home" component={HomeScreen} />
-    </Stack.Navigator>
-  );
+  return <AppNavigator />;
 }
