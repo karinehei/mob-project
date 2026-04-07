@@ -1,11 +1,10 @@
 import React from 'react';
 
-import { HomeScreen } from '../screens/HomeScreen';
+import { AppNavigator } from './AppNavigator';
 
 /**
- * Top-level navigation shell. Currently mounts a single screen — swap for a real navigator later.
+ * Top-level navigation shell — delegates to stack in AppNavigator.
  */
 export function RootNavigator(): React.JSX.Element {
-  // TODO: integrate Stack / Tab navigator when dependency is added
-  return <HomeScreen />;
+  return <AppNavigator />;
 }

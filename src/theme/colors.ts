@@ -9,15 +9,15 @@ export const colors = {
   textSecondary: '#666666',
   textMuted: '#9CA3AF',
   border: '#E5E7EB',
-  /** Primary actions / accents (study shell) */
-  primary: '#5850EC',
+  /** Primary actions / accents (study shell, Figma-aligned) */
+  primary: '#5D5CFF',
   onPrimary: '#FFFFFF',
-  appBar: '#1F2937',
+  appBar: '#1A2332',
   onAppBar: '#FFFFFF',
-  sampleCardBg: '#EBF0FF',
-  sampleAccent: '#3730A3',
+  sampleCardBg: '#E8EDFF',
+  sampleAccent: '#1E3A5F',
   ratingSelectedBg: '#EEF2FF',
-  ratingSelectedBorder: '#5850EC',
+  ratingSelectedBorder: '#5D5CFF',
 } as const;
 
 export type ColorName = keyof typeof colors;
