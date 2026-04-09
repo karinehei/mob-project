@@ -8,22 +8,18 @@ import {
 } from 'react-native';
 
 import { ScreenContainer } from '../components/ScreenContainer';
+import { StudyAppBar } from '../components/StudyAppBar';
 import { colors } from '../theme/colors';
 import { spacing } from '../theme/spacing';
 import { typography } from '../theme/typography';
 
+import { NativeStackScreenProps } from '@react-navigation/native-stack';
+
+import { RootStackParamList } from '../navigation/AppNavigator';
+type Props = NativeStackScreenProps<RootStackParamList, 'Home'>;
+
 const RATING_ROW_A = [0, 1, 2, 3, 4, 5] as const;
 const RATING_ROW_B = [6, 7, 8, 9, 10] as const;
-
-function AppBarMenuIcon(): React.JSX.Element {
-  return (
-    <View style={styles.menuIcon} accessibilityElementsHidden>
-      <View style={styles.menuBar} />
-      <View style={styles.menuBar} />
-      <View style={styles.menuBar} />
-    </View>
-  );
-}
 
 type RatingChipProps = {
   value: number;
@@ -56,29 +52,14 @@ function RatingChip({ value, selected, onPress }: RatingChipProps): React.JSX.El
 /**
  * Entry screen shell. Layout aligned with sensory evaluation wireframe; no study flow yet.
  */
-export function HomeScreen(): React.JSX.Element {
+export default function HomeScreen({ navigation }: Props): React.JSX.Element {
   // Local UI state only — replace with study flow / persistence later.
   const [selectedRating, setSelectedRating] = useState<number>(8);
 
   return (
     <ScreenContainer testID="screen-home">
       <View style={styles.root}>
-        <View style={styles.appBar}>
-          <Pressable
-            style={styles.appBarIconHit}
-            onPress={() => {
-              /* TODO: drawer / nav when defined */
-            }}
-            accessibilityRole="button"
-            accessibilityLabel="Valikko"
-          >
-            <AppBarMenuIcon />
-          </Pressable>
-          <Text style={styles.appBarTitle} numberOfLines={1}>
-            Food_Study
-          </Text>
-          <View style={styles.appBarSpacer} />
-        </View>
+        <StudyAppBar />
 
         <ScrollView
           style={styles.scroll}
@@ -134,12 +115,10 @@ export function HomeScreen(): React.JSX.Element {
         <View style={styles.footer}>
           <Pressable
             style={({ pressed }) => [styles.cta, pressed && styles.ctaPressed]}
-            onPress={() => {
-              /* TODO: navigate when stack / flow exists */
-            }}
+            onPress={() => navigation.navigate('Sample')}
             accessibilityRole="button"
             accessibilityLabel="Seuraava näkymä"
-          >
+            >
             <Text style={styles.ctaLabel}>Next screen</Text>
           </Pressable>
         </View>
@@ -153,39 +132,6 @@ const CHIP_SIZE = 44;
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-  },
-  appBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm + 2,
-    backgroundColor: colors.appBar,
-  },
-  appBarIconHit: {
-    width: 44,
-    height: 44,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  menuIcon: {
-    justifyContent: 'space-between',
-    height: 14,
-    width: 20,
-  },
-  menuBar: {
-    height: 2,
-    borderRadius: 1,
-    backgroundColor: colors.onAppBar,
-  },
-  appBarTitle: {
-    flex: 1,
-    textAlign: 'center',
-    ...typography.body,
-    fontWeight: '700',
-    color: colors.onAppBar,
-  },
-  appBarSpacer: {
-    width: 44,
   },
   scroll: {
     flex: 1,

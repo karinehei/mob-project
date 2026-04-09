@@ -2,7 +2,7 @@ import React from 'react';
 import { SampleProvider } from './src/context/SampleContext';
 import { StatusBar } from 'react-native';
 
-import { RootNavigator } from './src/navigation/RootNavigator';
+import { AppNavigator } from './src/navigation/AppNavigator';
 import { colors } from './src/theme/colors';
 
 /**
@@ -12,7 +12,7 @@ function App(): React.JSX.Element {
   return (
     <SampleProvider>
       <StatusBar barStyle="dark-content" backgroundColor={colors.background} />
-      <RootNavigator />
+      <AppNavigator />
     </SampleProvider>
   );
 }
