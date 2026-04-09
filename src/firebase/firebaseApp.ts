@@ -13,7 +13,7 @@ function isConfigured(): boolean {
 export function getFirebaseApp(): FirebaseApp {
   if (!isConfigured()) {
     throw new Error(
-      'Firebase not configured: set apiKey and projectId in firebaseConfig.ts (or env) before calling getFirebaseApp().',
+      'Firebase not configured: copy .env.example to .env and set FIREBASE_API_KEY and FIREBASE_PROJECT_ID (see README).',
     );
   }
   if (getApps().length === 0) {
