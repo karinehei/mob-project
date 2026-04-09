@@ -130,7 +130,39 @@ Debugissa: Metron ei tavoiteta (sammutettu, väärä verkko, WSL↔Windows) tai 
 
 ## Konfiguraatio ja turvallisuus
 
-- **`src/firebase/firebaseConfig.ts`:** täytä omalla Firebase-projektilla; älä commitoi avainpareja tai `.env`-tiedostoja (`.env*` on gitignoressa).
+### Firebase (`.env`)
+
+Kopioi malli ja täytä oman projektisi tiedot:
+
+```bash
+cp .env.example .env
+```
+
+**Firebase Console:**
+
+1. Avaa [Firebase Console](https://console.firebase.google.com/).
+2. Valitse projekti (tai **Lisää projekti** ja luo uusi).
+3. Vasemmalta **⚙️ Projektin asetukset** (*Project settings*).
+4. Välilehti **Yleiset** (*General*), kohta **Omat sovelluksesi** (*Your apps*).
+5. Jos **Web**-sovellusta (`</>`) ei ole vielä, paina **Lisää sovellus** → valitse **Web** (`</>`), anna lempinimi (vapaaehtoinen), tarvittaessa Analytics päälle → **Rekisteröi sovellus**.
+6. Näet koodiblokin `firebaseConfig` / `const firebaseConfig = { ... }`. Kopioi kentät `.env`-tiedostoon alla olevan taulukon mukaan (ei lainausmerkkejä arvojen ympärille, ellei Firebase itse anna niitä).
+
+| Firebase-konsolin kenttä (`firebaseConfig`) | Muuttuja `.env`-tiedostossa |
+|---------------------------------------------|-----------------------------|
+| `apiKey` | `FIREBASE_API_KEY` |
+| `authDomain` | `FIREBASE_AUTH_DOMAIN` |
+| `projectId` | `FIREBASE_PROJECT_ID` |
+| `storageBucket` | `FIREBASE_STORAGE_BUCKET` |
+| `messagingSenderId` | `FIREBASE_MESSAGING_SENDER_ID` |
+| `appId` | `FIREBASE_APP_ID` |
+| `measurementId` (vain jos Analytics käytössä) | `FIREBASE_MEASUREMENT_ID` |
+
+**Tärkeää:** `FIREBASE_API_KEY` ja `FIREBASE_PROJECT_ID` ovat pakollisia, jotta `getFirebaseApp()` toimii. Muut kentät kannattaa täyttää samasta objektista, jotta SDK käyttäytyy oikein.
+
+Kun muutat `.env`-tiedostoa, käynnistä Metro uudelleen (tarvittaessa `npm start -- --reset-cache`).
+
+**WSL:** `.env` on repojuuressa (`/mnt/d/.../mob-project/.env` tai `~/.../.env`). Jos muokkaat tiedostoa Windows-editorilla, käytä mieluummin **LF**-rivinvaihtoja; vältä commitointia (`.env` on `.gitignore`-listalla).
+
 - **`android/local.properties`:** paikallinen SDK-polku, ei repossa.
 
 ## CI
