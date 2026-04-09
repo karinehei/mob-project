@@ -1,1 +1,1 @@
-export { getStudySessionPlaceholder } from './studyService';
+export { fetchActiveStudySession } from './studyService';

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import {
+  ActivityIndicator,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -12,10 +13,11 @@ import { StudyAppBar } from '../components/StudyAppBar';
 import { colors } from '../theme/colors';
 import { spacing } from '../theme/spacing';
 import { typography } from '../theme/typography';
+import { useSampleContext } from '../context/SampleContext';
 
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-
 import { RootStackParamList } from '../navigation/AppNavigator';
+
 type Props = NativeStackScreenProps<RootStackParamList, 'Home'>;
 
 const RATING_ROW_A = [0, 1, 2, 3, 4, 5] as const;
@@ -27,7 +29,11 @@ type RatingChipProps = {
   onPress: () => void;
 };
 
-function RatingChip({ value, selected, onPress }: RatingChipProps): React.JSX.Element {
+function RatingChip({
+  value,
+  selected,
+  onPress,
+}: RatingChipProps): React.JSX.Element {
   return (
     <Pressable
       onPress={onPress}
@@ -41,7 +47,10 @@ function RatingChip({ value, selected, onPress }: RatingChipProps): React.JSX.El
       accessibilityLabel={`Arvo ${value}`}
     >
       <Text
-        style={[styles.ratingChipText, selected && styles.ratingChipTextSelected]}
+        style={[
+          styles.ratingChipText,
+          selected && styles.ratingChipTextSelected,
+        ]}
       >
         {value}
       </Text>
@@ -49,12 +58,38 @@ function RatingChip({ value, selected, onPress }: RatingChipProps): React.JSX.El
   );
 }
 
-/**
- * Entry screen shell. Layout aligned with sensory evaluation wireframe; no study flow yet.
- */
 export default function HomeScreen({ navigation }: Props): React.JSX.Element {
-  // Local UI state only — replace with study flow / persistence later.
   const [selectedRating, setSelectedRating] = useState<number>(8);
+
+  // real data
+  const { currentSample, isLoading, error } = useSampleContext();
+
+  // loading state
+  if (isLoading) {
+    return (
+      <ScreenContainer testID="screen-home">
+        <StudyAppBar />
+        <View style={styles.centerContainer}>
+          <ActivityIndicator size="large" color={colors.primary} />
+          <Text style={styles.infoText}>Ladataan istuntoa...</Text>
+        </View>
+      </ScreenContainer>
+    );
+  }
+
+  // error state (or empty state aswell)
+  if (error || !currentSample) {
+    return (
+      <ScreenContainer testID="screen-home">
+        <StudyAppBar />
+        <View style={styles.centerContainer}>
+          <Text style={styles.infoText}>
+            {error || 'Kaikki näytteet on arvioitu.'}
+          </Text>
+        </View>
+      </ScreenContainer>
+    );
+  }
 
   return (
     <ScreenContainer testID="screen-home">
@@ -71,8 +106,7 @@ export default function HomeScreen({ navigation }: Props): React.JSX.Element {
 
           <View style={styles.sampleCard}>
             <Text style={styles.sampleLabel}>Current Sample Code:</Text>
-            <Text style={styles.sampleCode}>451</Text>
-            {/* TODO: replace with session sample id */}
+            <Text style={styles.sampleCode}>{currentSample}</Text>
           </View>
 
           <Text style={styles.instruction}>
@@ -118,7 +152,7 @@ export default function HomeScreen({ navigation }: Props): React.JSX.Element {
             onPress={() => navigation.navigate('Sample')}
             accessibilityRole="button"
             accessibilityLabel="Seuraava näkymä"
-            >
+          >
             <Text style={styles.ctaLabel}>Next screen</Text>
           </Pressable>
         </View>
@@ -252,5 +286,18 @@ const styles = StyleSheet.create({
     ...typography.body,
     fontWeight: '700',
     color: colors.onPrimary,
+  },
+
+  centerContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: spacing.xl,
+  },
+  infoText: {
+    marginTop: spacing.md,
+    ...typography.body,
+    color: colors.textSecondary,
+    textAlign: 'center',
   },
 });
