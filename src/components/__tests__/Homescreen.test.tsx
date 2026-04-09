@@ -11,6 +11,6 @@ describe('HomeScreen', () => {
       />
     );
 
-    expect(getByText('Home Screen')).toBeTruthy();
+    expect(getByText('Sensory Evaluation')).toBeTruthy();
   });
 });
