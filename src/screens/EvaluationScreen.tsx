@@ -1,11 +1,5 @@
 import React from 'react';
-import {
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import { ScreenContainer } from '../components/ScreenContainer';
@@ -14,10 +8,15 @@ import { RootStackParamList } from '../navigation/AppNavigator';
 import { colors } from '../theme/colors';
 import { spacing } from '../theme/spacing';
 import { typography } from '../theme/typography';
+import { useSampleContext } from '../context/SampleContext';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Evaluation'>;
 
-export default function EvaluationScreen({ navigation }: Props): React.JSX.Element {
+export default function EvaluationScreen({
+  navigation,
+}: Props): React.JSX.Element {
+  const { currentSample, sessionId } = useSampleContext();
+
   return (
     <ScreenContainer testID="screen-evaluation">
       <View style={styles.root}>
@@ -34,10 +33,13 @@ export default function EvaluationScreen({ navigation }: Props): React.JSX.Eleme
           <Text style={styles.lead}>Arviointinäyttö</Text>
 
           <View style={styles.infoCard}>
-            <Text style={styles.infoTitle}>Tallenna arvio</Text>
+            <Text style={styles.infoTitle}>
+              Tallenna arvio (Session: {sessionId})
+            </Text>
             <Text style={styles.infoBody}>
-              Tähän tulee myöhemmin varsinaiset arviointikentät ja lähetys. Paina
-              alla olevaa painiketta siirtyäksesi tulosnäkymään.
+              Olet arvioimassa näytettä: {currentSample}.{'\n\n'}
+              Tähän tulee myöhemmin varsinaiset arviointikentät ja lähetys.
+              Paina alla olevaa painiketta siirtyäksesi tulosnäkymään.
             </Text>
           </View>
         </ScrollView>
