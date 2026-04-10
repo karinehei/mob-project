@@ -66,6 +66,7 @@ npm run android
 | `npm run lint` | ESLint. |
 | `npm run typecheck` | `tsc --noEmit`. |
 | `npm run test` | Jest. |
+| `npm run seed` | Kirjoittaa kehitysdatan Firestoreen (`scripts/seedFirestore.ts`). Katso [Firestore-seed](#firestore-seed-kehitysdata) ja `--dry-run`. |
 
 ## Android: emulaattori tai oma puhelin
 
@@ -104,7 +105,7 @@ Debugissa: Metron ei tavoiteta (sammutettu, väärä verkko, WSL↔Windows) tai 
 ├── .github/workflows/     # CI (Node: lint, typecheck, test)
 ├── android/               # Nativi Android (Gradle, Kotlin)
 ├── patches/               # patch-package (Metro / community-cli-plugin)
-├── scripts/               # WSL-apu (wsl-android-env.sh, wsl-run-android.sh)
+├── scripts/               # WSL-apu, Firestore-seed (seedFirestore.ts)
 ├── src/
 │   ├── components/        # Button, PlaceholderBlock, ScreenContainer
 │   ├── constants/         # config, routes (ROUTES)
@@ -168,6 +169,49 @@ Kun muutat `.env`-tiedostoa, käynnistä Metro uudelleen (tarvittaessa `npm star
 - Kokoelmat: **`sessions`** (vähintään yksi dokumentti, kenttä `samples`: string-taulukko), **`evaluations`** (luodaan automaattisesti ensimmäisellä tallennuksella).
 - Arviointi: etusivun pistemäärä välittyy kontekstilla → **Arviointi** → **Tallenna ja jatka** kirjoittaa dokumentin kentillä `sampleCode`, `rating`, `sessionId`, `createdAt`.
 - **Säännöt:** Firebase Console → Firestore → Rules. Ilman kirjoitusoikeutta `evaluations`-kokoelmaan tallennus epäonnistuu (sovellus näyttää virheen). Tuotantoon älä jätä avoimia testisääntöjä.
+
+### Firestore-seed (kehitysdata)
+
+Skripti **`scripts/seedFirestore.ts`** kirjoittaa hallitusti testidatan **omaan dev-Firebase-projektiisi** (sama `.env` kuin sovelluksella). Lähde: `src/data/mockData.ts` (`mockSamples` → istunnon `samples`-taulukko; esimerkkiarviointeista kaksi dokumenttia `evaluations`-kokoelmaan, sama kenttämalli kuin sovelluksen tallennuksessa).
+
+```bash
+# Näytä mitä tehtäisiin (ei verkko-/kirjoituspyyntöjä)
+npm run seed -- --dry-run
+
+# Varsinainen kirjoitus
+npm run seed
+```
+
+**Idempotenssi:** käytössä on kiinteät dokumentti-id:t (`sessions/seed-dev-session`, `evaluations/seed-evaluation-mock-example`, `evaluations/seed-evaluation-mock-payload`). Uudelleenajo päivittää samat dokumentit (`setDoc` + `merge`), ei luo uusia rivejä joka ajolla.
+
+**Tuotantosuoja:** skripti **keskeyttää** (poistumakoodi ≠ 0), jos `FIREBASE_PROJECT_ID` ei näytä kehitysprojektilta (heuristiikka: tunnuksessa esim. `dev`, `test`, `staging`, `sandbox`, välimerkkien ympäröimä `-project-`, tai `amk` …). Muussa tapauksessa:
+
+- lisää `.env`-tiedostoon `FIREBASE_SEED_ALLOW_PROJECT=<sama kuin FIREBASE_PROJECT_ID>`, tai
+- aseta **vain tietoisesti** `FIREBASE_SEED_CONFIRM_PRODUCTION=I_UNDERSTAND` (kirjoittaa myös “tuotantotyyliseen” projektiin — vältä).
+
+Lisäksi voit yliajaa ympäristömuuttujilla komentoriviltä (esim. `FIREBASE_SEED_ALLOW_PROJECT=... npm run seed`).
+
+**Firestore rules:** seed käyttää Web SDK:ta ilman Admin-oikeuksia — devissä sääntöjen pitää sallia **luku ja kirjoitus** kokoelmiin `sessions` ja `evaluations`. Virheet tulostuvat selkeästi; epäonnistuessa prosessi palauttaa poistumakoodin **1**.
+
+**Jos `permission-denied` / `PERMISSION_DENIED`:** tietokanta on todennäköisesti luotu **Production**-tilassa tai säännöt kiellävät kirjoituksen. Avaa **Firebase Console** → **Firestore Database** → **Rules** ja julkaise **vain kehitysprojektiin** esimerkiksi alla oleva (korvaa myöhemmin authilla ja tiukemmilla ehdoilla):
+
+```
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /sessions/{document} {
+      allow read, write: if true;
+    }
+    match /evaluations/{document} {
+      allow read, write: if true;
+    }
+  }
+}
+```
+
+**Älä jätä tätä tuotantoon** — kuka tahansa API-avaimella voi lukea/kirjoittaa näitä kokoelmia.
+
+**Huom:** `fetchActiveStudySession` hakee tällä hetkellä yhden istunnon ilman järjestystä (`limit(1)`). Jos kannassa on muita `sessions`-dokumentteja, sovellus ei välttämättä valitse `seed-dev-session`-dokumenttia — devissä pidä mieluummin yksi istunto tai tyhjennä ylimääräiset.
 
 - **`android/local.properties`:** paikallinen SDK-polku, ei repossa.
 
