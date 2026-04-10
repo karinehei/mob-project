@@ -1,15 +1,12 @@
-import { initializeApp, getApps, getApp } from 'firebase/app';
 import {
-  getFirestore,
   collection,
   getDocs,
   limit,
   query,
 } from 'firebase/firestore';
-import { firebaseConfig } from '../firebase/firebaseConfig';
 
-const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
-export const db = getFirestore(app);
+import {FIRESTORE_COLLECTIONS} from '../constants/firestore';
+import {getFirestoreDb} from '../firebase/firestore';
 
 export interface StudySession {
   id: string;
@@ -17,12 +14,12 @@ export interface StudySession {
 }
 
 /**
- * Fetches the active study session from Firestore.
+ * Hakee yhden istuntodokumentin kokoelmasta `sessions` (MVP: ensimmäinen dokumentti).
  */
 export async function fetchActiveStudySession(): Promise<StudySession | null> {
   try {
-    const sessionsRef = collection(db, 'sessions');
-    // fetch 1 active session for the MVP
+    const db = getFirestoreDb();
+    const sessionsRef = collection(db, FIRESTORE_COLLECTIONS.sessions);
     const q = query(sessionsRef, limit(1));
     const snapshot = await getDocs(q);
 
@@ -30,12 +27,12 @@ export async function fetchActiveStudySession(): Promise<StudySession | null> {
       return null;
     }
 
-    const doc = snapshot.docs[0];
-    const data = doc.data();
+    const docSnap = snapshot.docs[0];
+    const data = docSnap.data();
 
     return {
-      id: doc.id,
-      samples: data.samples || [],
+      id: docSnap.id,
+      samples: Array.isArray(data.samples) ? data.samples.map(String) : [],
     };
   } catch (error) {
     console.error('Error fetching study session:', error);

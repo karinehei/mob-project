@@ -62,7 +62,8 @@ export default function HomeScreen({ navigation }: Props): React.JSX.Element {
   const [selectedRating, setSelectedRating] = useState<number>(8);
 
   // real data
-  const { currentSample, isLoading, error } = useSampleContext();
+  const { currentSample, isLoading, error, setPendingAppearanceRating } =
+    useSampleContext();
 
   // loading state
   if (isLoading) {
@@ -142,14 +143,16 @@ export default function HomeScreen({ navigation }: Props): React.JSX.Element {
                 ))}
               </View>
             </View>
-            {/* TODO: scoring model, validation, Firestore / API */}
           </View>
         </ScrollView>
 
         <View style={styles.footer}>
           <Pressable
             style={({ pressed }) => [styles.cta, pressed && styles.ctaPressed]}
-            onPress={() => navigation.navigate('Sample')}
+            onPress={() => {
+              setPendingAppearanceRating(selectedRating);
+              navigation.navigate('Sample');
+            }}
             accessibilityRole="button"
             accessibilityLabel="Seuraava näkymä"
           >
