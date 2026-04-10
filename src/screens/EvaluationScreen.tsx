@@ -1,21 +1,72 @@
-import React from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import React, { useState } from 'react';
+import {
+  ActivityIndicator,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import { ScreenContainer } from '../components/ScreenContainer';
 import { StudyAppBar } from '../components/StudyAppBar';
+import { useSampleContext } from '../context/SampleContext';
 import { RootStackParamList } from '../navigation/AppNavigator';
+import { saveEvaluation } from '../services/evaluationService';
 import { colors } from '../theme/colors';
 import { spacing } from '../theme/spacing';
 import { typography } from '../theme/typography';
-import { useSampleContext } from '../context/SampleContext';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Evaluation'>;
+
+function saveErrorMessage(err: unknown): string {
+  if (err instanceof Error && err.message) {
+    return err.message;
+  }
+  return 'Tallennus epäonnistui. Tarkista verkko ja yritä uudelleen.';
+}
 
 export default function EvaluationScreen({
   navigation,
 }: Props): React.JSX.Element {
-  const { currentSample, sessionId } = useSampleContext();
+  const {
+    currentSample,
+    sessionId,
+    pendingAppearanceRating,
+    clearPendingAppearanceRating,
+  } = useSampleContext();
+
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
+
+  const canSave =
+    Boolean(currentSample) &&
+    pendingAppearanceRating !== null &&
+    !saving;
+
+  const onSave = async () => {
+    if (!currentSample || pendingAppearanceRating === null) {
+      setSaveError('Valitse pistemäärä etusivulla ja yritä uudelleen.');
+      return;
+    }
+
+    setSaving(true);
+    setSaveError(null);
+    try {
+      await saveEvaluation({
+        sampleCode: currentSample,
+        rating: pendingAppearanceRating,
+        sessionId,
+      });
+      clearPendingAppearanceRating();
+      navigation.navigate('Result', { saveSucceeded: true });
+    } catch (e) {
+      setSaveError(saveErrorMessage(e));
+    } finally {
+      setSaving(false);
+    }
+  };
 
   return (
     <ScreenContainer testID="screen-evaluation">
@@ -30,28 +81,46 @@ export default function EvaluationScreen({
         >
           <Text style={styles.pageTitle}>Arviointi</Text>
 
-          <Text style={styles.lead}>Arviointinäyttö</Text>
+          <Text style={styles.lead}>Tallenna arvio Firestoreen</Text>
 
           <View style={styles.infoCard}>
             <Text style={styles.infoTitle}>
-              Tallenna arvio (Session: {sessionId})
+              Istunto: {sessionId ?? '—'}
             </Text>
             <Text style={styles.infoBody}>
-              Olet arvioimassa näytettä: {currentSample}.{'\n\n'}
-              Tähän tulee myöhemmin varsinaiset arviointikentät ja lähetys.
-              Paina alla olevaa painiketta siirtyäksesi tulosnäkymään.
+              Näyte: {currentSample ?? '—'}
+              {'\n'}
+              Ulkonäkö / Appearance:{' '}
+              {pendingAppearanceRating !== null
+                ? `${pendingAppearanceRating} / 10`
+                : 'Valitse etusivulla'}
             </Text>
           </View>
+
+          {saveError ? (
+            <View style={styles.errorBanner}>
+              <Text style={styles.errorText}>{saveError}</Text>
+            </View>
+          ) : null}
         </ScrollView>
 
         <View style={styles.footer}>
           <Pressable
-            style={({ pressed }) => [styles.cta, pressed && styles.ctaPressed]}
-            onPress={() => navigation.navigate('Result')}
+            style={({ pressed }) => [
+              styles.cta,
+              !canSave && styles.ctaDisabled,
+              pressed && canSave && styles.ctaPressed,
+            ]}
+            onPress={onSave}
+            disabled={!canSave}
             accessibilityRole="button"
-            accessibilityLabel="Siirry tulokseen"
+            accessibilityLabel="Tallenna arvio"
           >
-            <Text style={styles.ctaLabel}>Siirry tulokseen</Text>
+            {saving ? (
+              <ActivityIndicator color={colors.onPrimary} />
+            ) : (
+              <Text style={styles.ctaLabel}>Tallenna ja jatka</Text>
+            )}
           </Pressable>
         </View>
       </View>
@@ -106,6 +175,18 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
     lineHeight: 22,
   },
+  errorBanner: {
+    marginTop: spacing.md,
+    padding: spacing.md,
+    borderRadius: 12,
+    backgroundColor: colors.surfaceMuted,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  errorText: {
+    ...typography.body,
+    color: colors.textPrimary,
+  },
   footer: {
     paddingHorizontal: spacing.lg,
     paddingTop: spacing.md,
@@ -120,6 +201,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: colors.primary,
+    minHeight: 48,
+  },
+  ctaDisabled: {
+    opacity: 0.5,
   },
   ctaPressed: {
     opacity: 0.9,

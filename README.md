@@ -161,7 +161,13 @@ cp .env.example .env
 
 Kun muutat `.env`-tiedostoa, käynnistä Metro uudelleen (tarvittaessa `npm start -- --reset-cache`).
 
-**WSL:** `.env` on repojuuressa (`/mnt/d/.../mob-project/.env` tai `~/.../.env`). Jos muokkaat tiedostoa Windows-editorilla, käytä mieluummin **LF**-rivinvaihtoja; vältä commitointia (`.env` on `.gitignore`-listalla).
+**WSL:** `.env` on repojuuressa (`/mnt/d/.../mob-project/.env` tai `~/.../.env`). Jos muokkaat tiedostoa Windows-editorilla, käytä mieluummin **LF**-rivinvaihtoja; vältä commitointia (`.env` on `.gitignore`-listalla). Firestore-tallennus WSL:ssä: katso [WSL.md](./WSL.md) kohdasta **7. Firebase / Firestore (WSL)**.
+
+### Firestore (sovellus)
+
+- Kokoelmat: **`sessions`** (vähintään yksi dokumentti, kenttä `samples`: string-taulukko), **`evaluations`** (luodaan automaattisesti ensimmäisellä tallennuksella).
+- Arviointi: etusivun pistemäärä välittyy kontekstilla → **Arviointi** → **Tallenna ja jatka** kirjoittaa dokumentin kentillä `sampleCode`, `rating`, `sessionId`, `createdAt`.
+- **Säännöt:** Firebase Console → Firestore → Rules. Ilman kirjoitusoikeutta `evaluations`-kokoelmaan tallennus epäonnistuu (sovellus näyttää virheen). Tuotantoon älä jätä avoimia testisääntöjä.
 
 - **`android/local.properties`:** paikallinen SDK-polku, ei repossa.
 
@@ -172,7 +178,7 @@ Push haaraan **`main`** ja **pull requestit** ajavat [`.github/workflows/ci.yml`
 ## Seuraavat vaiheet (tuote / tekninen velka)
 
 - Navigaatio: Stack/Tab; kytke `StudyScreen` ja `ROUTES` käyttöön `RootNavigator`-tasolla.
-- Firebase: turvallinen konfiguraatio; `evaluationService` / `studyService` ilman pelkkiä `Not implemented` -polkuja tarvittaessa.
+- Firestore: tiukenna security rules ja auth; täytä `getSamples` tarvittaessa.
 - Korvaa placeholder-tekstit ja -komponentit varsinaisella sisällöllä.
 - CI: Android-buildi, kun pipeline on määritelty.
 

@@ -17,7 +17,12 @@ import { typography } from '../theme/typography';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Result'>;
 
-export default function ResultScreen({ navigation }: Props): React.JSX.Element {
+export default function ResultScreen({
+  navigation,
+  route,
+}: Props): React.JSX.Element {
+  const saveSucceeded = route.params?.saveSucceeded === true;
+
   return (
     <ScreenContainer testID="screen-result">
       <View style={styles.root}>
@@ -34,10 +39,13 @@ export default function ResultScreen({ navigation }: Props): React.JSX.Element {
           <Text style={styles.lead}>Tulosnäyttö</Text>
 
           <View style={styles.infoCard}>
-            <Text style={styles.infoTitle}>Kiitos</Text>
+            <Text style={styles.infoTitle}>
+              {saveSucceeded ? 'Tallennettu' : 'Tulos'}
+            </Text>
             <Text style={styles.infoBody}>
-              Tähän tulee myöhemmin yhteenveto arvioinnista. Voit palata etusivulle
-              aloittaaksesi uuden kierroksen.
+              {saveSucceeded
+                ? 'Arvio tallennettu Firestoreen. Voit palata etusivulle jatkamaan.'
+                : 'Voit palata etusivulle aloittaaksesi uuden kierroksen.'}
             </Text>
           </View>
         </ScrollView>

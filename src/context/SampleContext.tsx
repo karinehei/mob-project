@@ -15,6 +15,10 @@ interface SampleContextType {
   isLoading: boolean;
   error: string | null;
   nextSample: () => void;
+  /** Ulkonäköpisteet 0–10; asetetaan etusivulta ennen Sample-näkymää */
+  pendingAppearanceRating: number | null;
+  setPendingAppearanceRating: (rating: number) => void;
+  clearPendingAppearanceRating: () => void;
 }
 
 export const SampleContext = createContext<SampleContextType | undefined>(
@@ -39,6 +43,9 @@ export const SampleProvider: React.FC<ProviderProps> = ({ children }) => {
   const [currentIndex, setCurrentIndex] = useState<number>(0);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [pendingAppearanceRating, setPendingAppearanceRating] = useState<
+    number | null
+  >(null);
 
   useEffect(() => {
     async function loadSession() {
@@ -73,6 +80,10 @@ export const SampleProvider: React.FC<ProviderProps> = ({ children }) => {
     }
   };
 
+  const clearPendingAppearanceRating = () => {
+    setPendingAppearanceRating(null);
+  };
+
   return (
     <SampleContext.Provider
       value={{
@@ -83,6 +94,9 @@ export const SampleProvider: React.FC<ProviderProps> = ({ children }) => {
         nextSample,
         isLoading,
         error,
+        pendingAppearanceRating,
+        setPendingAppearanceRating,
+        clearPendingAppearanceRating,
       }}
     >
       {children}

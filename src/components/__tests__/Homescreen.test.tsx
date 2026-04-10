@@ -7,6 +7,13 @@ jest.mock('../../context/SampleContext', () => ({
     currentSample: '420',
     isLoading: false,
     error: null,
+    sessionId: 'test-session',
+    samples: ['420'],
+    currentIndex: 0,
+    nextSample: jest.fn(),
+    pendingAppearanceRating: null,
+    setPendingAppearanceRating: jest.fn(),
+    clearPendingAppearanceRating: jest.fn(),
   }),
 }));
 
