@@ -220,6 +220,8 @@ service cloud.firestore {
 
 Push haaraan **`main`** ja **pull requestit** ajavat [`.github/workflows/ci.yml`](./.github/workflows/ci.yml): `npm ci`, `lint`, `typecheck`, `test`, sitten **Android debug -käännös** (`bash scripts/ci-assemble-debug.sh` → Gradle `assembleDebug`). Workflow asentaa JDK 17:n ja Android SDK:n runnerille; **ei** käytä `.env`-tiedostoa eikä tulosta Firebase-salaisuuksia.
 
+Välimuistit: **`setup-node`** (`cache: npm`), **`gradle/actions/setup-gradle`** (Gradle User Home) ja **`actions/cache`** Android SDK:lle (polku `ANDROID_SDK_ROOT` / `.ci-android-sdk`, avain Gradle-tiedostoista).
+
 Epäonnistunut vaihe (mukaan lukien Android-build) **estää merge-ehdon**, jos repon branch-suojaus vaatii CI-checkin läpäisyn.
 
 ## Seuraavat vaiheet (tuote / tekninen velka)
