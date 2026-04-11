@@ -1,7 +1,6 @@
-# Lightweight dev CI: lint, typecheck, test. No deploy/CD.
+# Dev CI: lint, typecheck, test, Android debug build (assembleDebug). No deploy/CD.
 # Firebase: älä lisää workflowhin vaiheita, jotka tulostavat FIREBASE_* tai .env-sisältöä.
 # Tämä jobi ei käytä .env-tiedostoa; bundler saa tyhjät arvot — avaimet eivät tule repoon.
-# TODO: Add native builds (Android/iOS) later when the pipeline is ready for them.
 name: CI
 
 on:
@@ -34,3 +33,16 @@ jobs:
 
       - name: Test
         run: npm run test
+
+      - name: Setup Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      # Sama bash-skripti kuin paikallinen WSL: bash scripts/ci-assemble-debug.sh
+      - name: Android debug build
+        run: bash scripts/ci-assemble-debug.sh
