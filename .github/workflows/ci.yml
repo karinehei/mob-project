@@ -43,6 +43,10 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
+      # Gradle User Home (wrapper, riippuvuudet, build cache) — nopeuttaa assembleDebug -toistoja
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v6
+
       # Sama bash-skripti kuin paikallinen WSL: bash scripts/ci-assemble-debug.sh
       - name: Android debug build
         run: bash scripts/ci-assemble-debug.sh
