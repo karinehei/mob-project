@@ -12,6 +12,10 @@ on:
 jobs:
   ci:
     runs-on: ubuntu-latest
+    env:
+      # Kiinteä polku + cache: setup-android ja Gradle käyttävät samaa SDK-hakemistoa toistoajossa
+      ANDROID_SDK_ROOT: ${{ github.workspace }}/.ci-android-sdk
+      ANDROID_HOME: ${{ github.workspace }}/.ci-android-sdk
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -39,6 +43,14 @@ jobs:
         with:
           distribution: temurin
           java-version: "17"
+
+      - name: Cache Android SDK
+        uses: actions/cache@v4
+        with:
+          path: .ci-android-sdk
+          key: ${{ runner.os }}-android-sdk-${{ hashFiles('android/gradle/wrapper/gradle-wrapper.properties', 'android/build.gradle', 'android/app/build.gradle', 'android/settings.gradle') }}
+          restore-keys: |
+            ${{ runner.os }}-android-sdk-
 
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
