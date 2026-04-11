@@ -5,6 +5,7 @@
   "scripts": {
     "android": "react-native run-android",
     "android:wsl": "bash scripts/wsl-run-android.sh",
+    "android:ci": "bash scripts/ci-assemble-debug.sh",
     "ios": "react-native run-ios",
     "start": "react-native start",
     "start:verbose": "react-native start --verbose",

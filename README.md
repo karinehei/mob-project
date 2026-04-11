@@ -1,6 +1,6 @@
 # Food_Study
 
-React Native -mobiilisovelluksen kehitysrunko (tutkimus/food-study -konteksti). Mukana on navigoinnin ja näkymien perusrakenne placeholder-sisällöllä, teemat, yhteisiä komponentteja, Firebase/Firestore -alustus **ilman** valmista autentikointia tai täyttä tietovarastologiikkaa, sekä Android-natiivikerros. Kehitystyökalut ja kevyt GitHub Actions -CI.
+React Native -mobiilisovelluksen kehitysrunko (tutkimus/food-study -konteksti). Mukana on navigoinnin ja näkymien perusrakenne placeholder-sisällöllä, teemat, yhteisiä komponentteja, Firebase/Firestore -alustus **ilman** valmista autentikointia tai täyttä tietovarastologiikkaa, sekä Android-natiivikerros. Kehitystyökalut ja GitHub Actions -CI (JavaScript-laatu + Android **debug** -käännöksen validointi).
 
 ## Teknologiat
 
@@ -9,7 +9,7 @@ React Native -mobiilisovelluksen kehitysrunko (tutkimus/food-study -konteksti). 
 | React Native | 0.76.5 |
 | React | 18.3.x |
 | TypeScript | 5.6.x |
-| Node.js | ≥ 18 (CI käyttää 20) |
+| Node.js | ≥ 18 (CI käyttää 24) |
 | Firebase | JS SDK 11.x (runko) |
 | Testit | Jest 29 |
 | Laatu | ESLint (@react-native/eslint-config), Prettier |
@@ -62,6 +62,7 @@ npm run android
 | `npm start` | Metro bundler (`react-native start`). |
 | `npm run android` | `react-native run-android` (debug, tarvitsee Metron tai upotetun bundlen). |
 | `npm run android:wsl` | Bash: WSL-ystävällinen adb/Gradle-ympäristö + `run-android` (ks. [WSL.md](./WSL.md)). |
+| `npm run android:ci` | Bash: `assembleDebug` ilman laitetta/emulaattoria — sama polku kuin CI:ssä (`scripts/ci-assemble-debug.sh`). WSL:ssä tai Linuxissa suoraan; paikallinen SDK vaaditaan. |
 | `npm run ios` | Ei toimi ilman `ios/`-projektia tässä repossa. |
 | `npm run lint` | ESLint. |
 | `npm run typecheck` | `tsc --noEmit`. |
@@ -102,10 +103,10 @@ Debugissa: Metron ei tavoiteta (sammutettu, väärä verkko, WSL↔Windows) tai 
 ## Kansiorakenne (tiivis)
 
 ```text
-├── .github/workflows/     # CI (Node: lint, typecheck, test)
+├── .github/workflows/     # CI: lint, typecheck, test, Android assembleDebug
 ├── android/               # Nativi Android (Gradle, Kotlin)
 ├── patches/               # patch-package (Metro / community-cli-plugin)
-├── scripts/               # WSL-apu, Firestore-seed (seedFirestore.ts)
+├── scripts/               # WSL-apu, CI-assemble (ci-assemble-debug.sh), Firestore-seed
 ├── src/
 │   ├── components/        # Button, PlaceholderBlock, ScreenContainer
 │   ├── constants/         # config, routes (ROUTES)
@@ -217,14 +218,18 @@ service cloud.firestore {
 
 ## CI
 
-Push haaraan **`main`** ja **pull requestit** ajavat [`.github/workflows/ci.yml`](./.github/workflows/ci.yml): `npm ci`, `lint`, `typecheck`, `test`. Natiivi-Android/iOS -buildit eivät ole mukana (kommentoitu TODO workflowssa).
+Push haaraan **`main`** ja **pull requestit** ajavat [`.github/workflows/ci.yml`](./.github/workflows/ci.yml): `npm ci`, `lint`, `typecheck`, `test`, sitten **Android debug -käännös** (`bash scripts/ci-assemble-debug.sh` → Gradle `assembleDebug`). Workflow asentaa JDK 17:n ja Android SDK:n runnerille; **ei** käytä `.env`-tiedostoa eikä tulosta Firebase-salaisuuksia.
+
+Välimuistit: **`setup-node`** (`cache: npm`), **`gradle/actions/setup-gradle`** (Gradle User Home) ja **`actions/cache`** Android SDK:lle (polku `ANDROID_SDK_ROOT` / `.ci-android-sdk`, avain Gradle-tiedostoista).
+
+Epäonnistunut vaihe (mukaan lukien Android-build) **estää merge-ehdon**, jos repon branch-suojaus vaatii CI-checkin läpäisyn.
 
 ## Seuraavat vaiheet (tuote / tekninen velka)
 
 - Navigaatio: Stack/Tab; kytke `StudyScreen` ja `ROUTES` käyttöön `RootNavigator`-tasolla.
 - Firestore: tiukenna security rules ja auth; täytä `getSamples` tarvittaessa.
 - Korvaa placeholder-tekstit ja -komponentit varsinaisella sisällöllä.
-- CI: Android-buildi, kun pipeline on määritelty.
+- CI: iOS-build tai release-allekirjoitus, jos natiivia halutaan laajentaa.
 
 ## Dokumentaatio
 

@@ -124,7 +124,7 @@ function assertSeedAllowed(
     [
       `Seeding estetty: projectId "${projectId}" ei näytä kehitysprojektilta.`,
       'Vaihtoehdot:',
-      `  • Käytä erillistä dev-Firebase-projektia, tai`,
+      '  • Käytä erillistä dev-Firebase-projektia, tai',
       `  • Lisää .env: FIREBASE_SEED_ALLOW_PROJECT=${projectId}`,
       `  • TAI (vaarallinen tuotannossa) FIREBASE_SEED_CONFIRM_PRODUCTION=${CONFIRM_PRODUCTION}`,
     ].join('\n'),

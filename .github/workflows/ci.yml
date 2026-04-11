@@ -1,7 +1,6 @@
-# Lightweight dev CI: lint, typecheck, test. No deploy/CD.
+# Dev CI: lint, typecheck, test, Android debug build (assembleDebug). No deploy/CD.
 # Firebase: älä lisää workflowhin vaiheita, jotka tulostavat FIREBASE_* tai .env-sisältöä.
 # Tämä jobi ei käytä .env-tiedostoa; bundler saa tyhjät arvot — avaimet eivät tule repoon.
-# TODO: Add native builds (Android/iOS) later when the pipeline is ready for them.
 name: CI
 
 on:
@@ -13,6 +12,10 @@ on:
 jobs:
   ci:
     runs-on: ubuntu-latest
+    env:
+      # Kiinteä polku + cache: setup-android ja Gradle käyttävät samaa SDK-hakemistoa toistoajossa
+      ANDROID_SDK_ROOT: ${{ github.workspace }}/.ci-android-sdk
+      ANDROID_HOME: ${{ github.workspace }}/.ci-android-sdk
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -34,3 +37,28 @@ jobs:
 
       - name: Test
         run: npm run test
+
+      - name: Setup Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Cache Android SDK
+        uses: actions/cache@v4
+        with:
+          path: .ci-android-sdk
+          key: ${{ runner.os }}-android-sdk-${{ hashFiles('android/gradle/wrapper/gradle-wrapper.properties', 'android/build.gradle', 'android/app/build.gradle', 'android/settings.gradle') }}
+          restore-keys: |
+            ${{ runner.os }}-android-sdk-
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      # Gradle User Home (wrapper, riippuvuudet, build cache) — nopeuttaa assembleDebug -toistoja
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v6
+
+      # Sama bash-skripti kuin paikallinen WSL: bash scripts/ci-assemble-debug.sh
+      - name: Android debug build
+        run: bash scripts/ci-assemble-debug.sh
