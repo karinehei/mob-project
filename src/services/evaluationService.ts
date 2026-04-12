@@ -1,7 +1,13 @@
-import {addDoc, collection, serverTimestamp} from 'firebase/firestore';
+import {
+  addDoc,
+  collection,
+  serverTimestamp,
+  getDocs,
+  query,
+} from 'firebase/firestore';
 
-import {FIRESTORE_COLLECTIONS} from '../constants/firestore';
-import {getFirestoreDb} from '../firebase/firestore';
+import { FIRESTORE_COLLECTIONS } from '../constants/firestore';
+import { getFirestoreDb } from '../firebase/firestore';
 
 export type SaveEvaluationInput = {
   sampleCode: string;
@@ -9,14 +15,18 @@ export type SaveEvaluationInput = {
   sessionId: string | null;
 };
 
-/** TODO: korvaa oikealla näyte-/katalogimuodolla kun `getSamples` toteutetaan */
-export type SampleRecordPlaceholder = Record<string, unknown>;
+export interface SampleRecord {
+  id: string;
+  [key: string]: unknown;
+}
 
 /**
  * Tallentaa yhden arvioinnin kokoelmaan `evaluations`.
  * Kentät: sampleCode, rating (0–10), sessionId, createdAt (palvelimen aika).
  */
-export async function saveEvaluation(input: SaveEvaluationInput): Promise<void> {
+export async function saveEvaluation(
+  input: SaveEvaluationInput,
+): Promise<void> {
   const code = input.sampleCode.trim();
   if (!code) {
     throw new Error('Näytekoodi puuttuu.');
@@ -34,9 +44,30 @@ export async function saveEvaluation(input: SaveEvaluationInput): Promise<void> 
   });
 }
 
-/** TODO: hae näytteet Firestoresta (erillinen tiketti) */
+/**
+ * Hakee näytteet Firestoresta.
+ */
 export async function getSamples(
   _studyId?: string,
-): Promise<readonly SampleRecordPlaceholder[]> {
-  throw new Error('Not implemented');
+): Promise<readonly SampleRecord[]> {
+  try {
+    const db = getFirestoreDb();
+    const samplesRef = collection(db, FIRESTORE_COLLECTIONS.samples);
+    const q = query(samplesRef);
+    const snapshot = await getDocs(q);
+
+    if (snapshot.empty) {
+      return [];
+    }
+
+    return snapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+  } catch (error) {
+    console.error('Error fetching samples:', error);
+    throw new Error(
+      'Näytteiden hakeminen epäonnistui. Tarkista verkko ja yritä uudelleen.',
+    );
+  }
 }
