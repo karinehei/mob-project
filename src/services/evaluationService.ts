@@ -35,13 +35,20 @@ export async function saveEvaluation(
     throw new Error('Pistemäärän tulee olla välillä 0–10.');
   }
 
-  const db = getFirestoreDb();
-  await addDoc(collection(db, FIRESTORE_COLLECTIONS.evaluations), {
-    sampleCode: code,
-    rating: input.rating,
-    sessionId: input.sessionId,
-    createdAt: serverTimestamp(),
-  });
+  try {
+    const db = getFirestoreDb();
+    await addDoc(collection(db, FIRESTORE_COLLECTIONS.evaluations), {
+      sampleCode: code,
+      rating: input.rating,
+      sessionId: input.sessionId,
+      createdAt: serverTimestamp(),
+    });
+  } catch (error) {
+    console.error('Error saving evaluation:', error);
+    throw new Error(
+      'Arvioinnin tallentaminen epäonnistui. Tarkista verkko ja yritä uudelleen.',
+    );
+  }
 }
 
 /**
