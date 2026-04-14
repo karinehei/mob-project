@@ -5,8 +5,8 @@
  * Turvallisuus: oletuksena vain “dev-tyyppiset” projectId:t tai
  * FIREBASE_SEED_ALLOW_PROJECT / FIREBASE_SEED_CONFIRM_PRODUCTION.
  */
-import {readFileSync, existsSync} from 'fs';
-import {join} from 'path';
+import { readFileSync, existsSync } from 'fs';
+import { join } from 'path';
 import {
   FirebaseError,
   initializeApp,
@@ -14,9 +14,9 @@ import {
   getApps,
   getApp,
 } from 'firebase/app';
-import {doc, getFirestore, setDoc, Timestamp} from 'firebase/firestore';
+import { doc, getFirestore, setDoc, Timestamp } from 'firebase/firestore';
 
-import {FIRESTORE_COLLECTIONS} from '../src/constants/firestore';
+import { FIRESTORE_COLLECTIONS } from '../src/constants/firestore';
 import {
   mockSamples,
   mockEvaluationExample,
@@ -73,7 +73,8 @@ function firebaseOptionsFromEnv(env: Record<string, string>): FirebaseOptions {
     projectId,
     authDomain: envString(env, 'FIREBASE_AUTH_DOMAIN') || undefined,
     storageBucket: envString(env, 'FIREBASE_STORAGE_BUCKET') || undefined,
-    messagingSenderId: envString(env, 'FIREBASE_MESSAGING_SENDER_ID') || undefined,
+    messagingSenderId:
+      envString(env, 'FIREBASE_MESSAGING_SENDER_ID') || undefined,
     appId: envString(env, 'FIREBASE_APP_ID') || undefined,
   };
   const mid = envString(env, 'FIREBASE_MEASUREMENT_ID');
@@ -170,7 +171,7 @@ async function main(): Promise<void> {
     );
   }
   const fileEnv = loadEnvFile(envPath);
-  const env: Record<string, string> = {...fileEnv};
+  const env: Record<string, string> = { ...fileEnv };
   for (const [k, v] of Object.entries(process.env)) {
     if (typeof v === 'string' && v !== '') {
       env[k] = v;
@@ -207,16 +208,13 @@ async function main(): Promise<void> {
   if (dryRun) {
     console.log('[dry-run] projectId:', projectId);
     console.log('[dry-run] sessions/', SEED_SESSION_DOC_ID, sessionPayload);
+    mockSamples.forEach((s) => console.log('[dry-run] samples/', s.id, s));
     console.log(
       '[dry-run] evaluations/',
       SEED_EVAL_IDS.fromMockEvaluation,
       evalA,
     );
-    console.log(
-      '[dry-run] evaluations/',
-      SEED_EVAL_IDS.fromMockPayload,
-      evalB,
-    );
+    console.log('[dry-run] evaluations/', SEED_EVAL_IDS.fromMockPayload, evalB);
     console.log('[dry-run] Ei kirjoituksia Firestoreen.');
     return;
   }
@@ -224,23 +222,38 @@ async function main(): Promise<void> {
   const app = getApps().length === 0 ? initializeApp(options) : getApp();
   const db = getFirestore(app);
 
-  const sessionRef = doc(db, FIRESTORE_COLLECTIONS.sessions, SEED_SESSION_DOC_ID);
-  await setDoc(sessionRef, sessionPayload, {merge: true});
+  const sessionRef = doc(
+    db,
+    FIRESTORE_COLLECTIONS.sessions,
+    SEED_SESSION_DOC_ID,
+  );
+  await setDoc(sessionRef, sessionPayload, { merge: true });
+
+  for (const sample of mockSamples) {
+    await setDoc(doc(db, FIRESTORE_COLLECTIONS.samples, sample.id), sample, {
+      merge: true,
+    });
+  }
 
   await setDoc(
-    doc(db, FIRESTORE_COLLECTIONS.evaluations, SEED_EVAL_IDS.fromMockEvaluation),
+    doc(
+      db,
+      FIRESTORE_COLLECTIONS.evaluations,
+      SEED_EVAL_IDS.fromMockEvaluation,
+    ),
     evalA,
-    {merge: true},
+    { merge: true },
   );
   await setDoc(
     doc(db, FIRESTORE_COLLECTIONS.evaluations, SEED_EVAL_IDS.fromMockPayload),
     evalB,
-    {merge: true},
+    { merge: true },
   );
 
   console.log('Seed valmis:', {
     projectId,
     session: SEED_SESSION_DOC_ID,
+    samples: mockSamples.map((s) => s.id),
     evaluations: Object.values(SEED_EVAL_IDS),
   });
 }
