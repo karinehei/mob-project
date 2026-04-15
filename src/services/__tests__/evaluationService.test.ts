@@ -52,8 +52,15 @@ describe('saveEvaluation', () => {
 });
 
 describe('getSamples', () => {
+  let consoleErrorSpy: jest.SpyInstance;
+
   beforeEach(() => {
     jest.clearAllMocks();
+    consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+  });
+
+  afterEach(() => {
+    consoleErrorSpy.mockRestore();
   });
 
   it('returns an empty array if snapshot is empty', async () => {
@@ -84,6 +91,10 @@ describe('getSamples', () => {
 
     await expect(getSamples()).rejects.toThrow(
       'Näytteiden hakeminen epäonnistui. Tarkista verkko ja yritä uudelleen.',
+    );
+    expect(consoleErrorSpy).toHaveBeenCalledWith(
+      'Error fetching samples:',
+      expect.any(Error),
     );
   });
 });
