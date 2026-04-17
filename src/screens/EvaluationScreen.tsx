@@ -17,6 +17,8 @@ import { saveEvaluation } from '../services/evaluationService';
 import { colors } from '../theme/colors';
 import { spacing } from '../theme/spacing';
 import { typography } from '../theme/typography';
+import { validateEvaluation, ValidationError } from '../validation/validateEvaluation';
+import type { EvaluationPayload } from '../types/evaluation';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Evaluation'>;
 
@@ -42,6 +44,8 @@ export default function EvaluationScreen({
 
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
+
+  const [validationErrors, setValidationErrors] = useState<ValidationError[]>([]);
 
   const canSave =
     Boolean(currentSample) &&
@@ -112,22 +116,45 @@ export default function EvaluationScreen({
       return;
     }
 
-    setSaving(true);
-    setSaveError(null);
-    try {
-      await saveEvaluation({
-        sampleCode: currentSample,
-        rating: pendingAppearanceRating,
-        sessionId,
-      });
-      clearPendingAppearanceRating();
-      navigation.navigate('Result', { saveSucceeded: true });
-    } catch (e) {
-      setSaveError(saveErrorMessage(e));
-    } finally {
-      setSaving(false);
-    }
+  const payload: EvaluationPayload = {
+    sampleId: currentSample,
+    scores: {
+      appearance: pendingAppearanceRating,
+    },
   };
+
+  const errors = validateEvaluation(payload, [
+    {
+      id: 'appearance',
+      label: 'Ulkonäkö',
+      minScore: 1,
+      maxScore: 10,
+    },
+  ]);
+
+  if (errors.length > 0) {
+    setValidationErrors(errors);
+    return;
+  }
+
+  setSaving(true);
+  setSaveError(null);
+  setValidationErrors([]);
+
+  try {
+    await saveEvaluation({
+      sampleCode: currentSample,
+      rating: pendingAppearanceRating,
+      sessionId,
+    });
+    clearPendingAppearanceRating();
+    navigation.navigate('Result', { saveSucceeded: true });
+  } catch (e) {
+    setSaveError(saveErrorMessage(e));
+  } finally {
+    setSaving(false);
+  }
+};
 
   return (
     <ScreenContainer testID="screen-evaluation">
@@ -163,6 +190,16 @@ export default function EvaluationScreen({
               <Text style={styles.errorText}>{saveError}</Text>
             </View>
           ) : null}
+
+          {validationErrors.length > 0 && (
+            <View style={styles.errorBanner}>
+              {validationErrors.map((err, idx) => (
+                <Text key={idx} style={styles.errorText}>
+                  {err.message}
+                </Text>
+              ))}
+            </View>
+          )}
         </ScrollView>
 
         <View style={styles.footer}>

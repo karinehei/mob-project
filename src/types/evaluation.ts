@@ -1,5 +1,7 @@
 import type { EntityId } from './models';
 
+export type { EntityId };
+
 export interface EvaluationCriterion {
   id: EntityId;
   label: string;
