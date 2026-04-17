@@ -1,5 +1,7 @@
 import {
   collection,
+  doc,
+  getDoc,
   getDocs,
   limit,
   query,
@@ -13,27 +15,44 @@ export interface StudySession {
   samples: string[];
 }
 
+const SEEDED_SESSION_DOC_ID = 'seed-dev-session';
+
+function mapSession(
+  id: string,
+  data: Record<string, unknown> | undefined,
+): StudySession {
+  return {
+    id,
+    samples: Array.isArray(data?.samples) ? data.samples.map(String) : [],
+  };
+}
+
 /**
  * Hakee yhden istuntodokumentin kokoelmasta `sessions` (MVP: ensimmäinen dokumentti).
  */
 export async function fetchActiveStudySession(): Promise<StudySession | null> {
   try {
     const db = getFirestoreDb();
+    const seededRef = doc(
+      db,
+      FIRESTORE_COLLECTIONS.sessions,
+      SEEDED_SESSION_DOC_ID,
+    );
+    const seededSnapshot = await getDoc(seededRef);
+
+    if (seededSnapshot.exists()) {
+      return mapSession(seededSnapshot.id, seededSnapshot.data());
+    }
+
     const sessionsRef = collection(db, FIRESTORE_COLLECTIONS.sessions);
     const q = query(sessionsRef, limit(1));
     const snapshot = await getDocs(q);
-
     if (snapshot.empty) {
       return null;
     }
 
     const docSnap = snapshot.docs[0];
-    const data = docSnap.data();
-
-    return {
-      id: docSnap.id,
-      samples: Array.isArray(data.samples) ? data.samples.map(String) : [],
-    };
+    return mapSession(docSnap.id, docSnap.data());
   } catch (error) {
     console.error('Error fetching study session:', error);
     throw error;

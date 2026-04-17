@@ -22,6 +22,10 @@ export default function ResultScreen({
   route,
 }: Props): React.JSX.Element {
   const saveSucceeded = route.params?.saveSucceeded === true;
+  const flowCompleted = route.params?.flowCompleted === true;
+  const primaryCtaLabel = flowCompleted
+    ? 'Aloita uusi kierros'
+    : 'Siirry etusivulle';
 
   return (
     <ScreenContainer testID="screen-result">
@@ -40,10 +44,12 @@ export default function ResultScreen({
 
           <View style={styles.infoCard}>
             <Text style={styles.infoTitle}>
-              {saveSucceeded ? 'Tallennettu' : 'Tulos'}
+              {flowCompleted ? 'Kaikki arvioitu' : saveSucceeded ? 'Tallennettu' : 'Tulos'}
             </Text>
             <Text style={styles.infoBody}>
-              {saveSucceeded
+              {flowCompleted
+                ? 'Viimeinenkin näyte arvioitiin onnistuneesti. Voit palata etusivulle aloittamaan uuden kierroksen.'
+                : saveSucceeded
                 ? 'Arvio tallennettu Firestoreen. Voit palata etusivulle jatkamaan.'
                 : 'Voit palata etusivulle aloittaaksesi uuden kierroksen.'}
             </Text>
@@ -55,9 +61,9 @@ export default function ResultScreen({
             style={({ pressed }) => [styles.cta, pressed && styles.ctaPressed]}
             onPress={() => navigation.navigate('Home')}
             accessibilityRole="button"
-            accessibilityLabel="Siirry etusivulle"
+            accessibilityLabel={primaryCtaLabel}
           >
-            <Text style={styles.ctaLabel}>Siirry etusivulle</Text>
+            <Text style={styles.ctaLabel}>{primaryCtaLabel}</Text>
           </Pressable>
         </View>
       </View>

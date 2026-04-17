@@ -34,6 +34,9 @@ export default function EvaluationScreen({
 }: Props): React.JSX.Element {
   const {
     currentSample,
+    currentIndex,
+    samples,
+    nextSample,
     sessionId,
     pendingAppearanceRating,
     clearPendingAppearanceRating,
@@ -147,8 +150,24 @@ export default function EvaluationScreen({
       rating: pendingAppearanceRating,
       sessionId,
     });
+
+    const isLastSample = currentIndex >= samples.length - 1;
+
+    if (!isLastSample) {
+      nextSample();
+    }
+
     clearPendingAppearanceRating();
-    navigation.navigate('Result', { saveSucceeded: true });
+
+    if (isLastSample) {
+      navigation.navigate('Result', {
+        saveSucceeded: true,
+        flowCompleted: true,
+      });
+      return;
+    }
+
+    navigation.navigate('Home');
   } catch (e) {
     setSaveError(saveErrorMessage(e));
   } finally {

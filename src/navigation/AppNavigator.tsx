@@ -11,7 +11,12 @@ export type RootStackParamList = {
   Home: undefined;
   Sample: undefined;
   Evaluation: undefined;
-  Result: { saveSucceeded?: boolean } | undefined;
+  Result:
+    | {
+        saveSucceeded?: boolean;
+        flowCompleted?: boolean;
+      }
+    | undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
