@@ -37,6 +37,9 @@ export default function EvaluationScreen({
     sessionId,
     pendingAppearanceRating,
     clearPendingAppearanceRating,
+    isLoading,
+    error,
+    retryLoadSession,
   } = useSampleContext();
 
   const [saving, setSaving] = useState(false);
@@ -49,11 +52,69 @@ export default function EvaluationScreen({
     pendingAppearanceRating !== null &&
     !saving;
 
-const onSave = async () => {
-  if (!currentSample || pendingAppearanceRating === null) {
-    setSaveError('Valitse pistemäärä etusivulla ja yritä uudelleen.');
-    return;
+  if (isLoading) {
+    return (
+      <ScreenContainer testID="screen-evaluation">
+        <StudyAppBar />
+        <View style={styles.centerContainer}>
+          <ActivityIndicator size="large" color={colors.primary} />
+          <Text style={styles.infoText}>Ladataan arviointinäkymää...</Text>
+        </View>
+      </ScreenContainer>
+    );
   }
+
+  if (error) {
+    return (
+      <ScreenContainer testID="screen-evaluation">
+        <StudyAppBar />
+        <View style={styles.centerContainer}>
+          <Text style={styles.infoText}>{error}</Text>
+          <Pressable
+            onPress={() => {
+              void retryLoadSession();
+            }}
+            style={({ pressed }) => [
+              styles.retryButton,
+              pressed && styles.retryButtonPressed,
+            ]}
+            accessibilityRole="button"
+            accessibilityLabel="Yritä uudelleen"
+          >
+            <Text style={styles.retryButtonLabel}>Yritä uudelleen</Text>
+          </Pressable>
+        </View>
+      </ScreenContainer>
+    );
+  }
+
+  if (!currentSample) {
+    return (
+      <ScreenContainer testID="screen-evaluation">
+        <StudyAppBar />
+        <View style={styles.centerContainer}>
+          <Text style={styles.infoText}>Ei arvioitavaa näytettä tällä hetkellä.</Text>
+          <Pressable
+            onPress={() => navigation.navigate('Home')}
+            style={({ pressed }) => [
+              styles.retryButton,
+              pressed && styles.retryButtonPressed,
+            ]}
+            accessibilityRole="button"
+            accessibilityLabel="Palaa etusivulle"
+          >
+            <Text style={styles.retryButtonLabel}>Palaa etusivulle</Text>
+          </Pressable>
+        </View>
+      </ScreenContainer>
+    );
+  }
+
+  const onSave = async () => {
+    if (!currentSample || pendingAppearanceRating === null) {
+      setSaveError('Valitse pistemäärä etusivulla ja yritä uudelleen.');
+      return;
+    }
 
   const payload: EvaluationPayload = {
     sampleId: currentSample,
@@ -251,5 +312,32 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: colors.onPrimary,
     letterSpacing: 0.3,
+  },
+  centerContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: spacing.xl,
+  },
+  infoText: {
+    marginTop: spacing.md,
+    ...typography.body,
+    color: colors.textSecondary,
+    textAlign: 'center',
+  },
+  retryButton: {
+    marginTop: spacing.md,
+    borderRadius: 999,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.lg,
+    backgroundColor: colors.primary,
+  },
+  retryButtonPressed: {
+    opacity: 0.9,
+  },
+  retryButtonLabel: {
+    ...typography.body,
+    fontWeight: '700',
+    color: colors.onPrimary,
   },
 });

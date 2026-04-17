@@ -62,8 +62,13 @@ export default function HomeScreen({ navigation }: Props): React.JSX.Element {
   const [selectedRating, setSelectedRating] = useState<number>(8);
 
   // real data
-  const { currentSample, isLoading, error, setPendingAppearanceRating } =
-    useSampleContext();
+  const {
+    currentSample,
+    isLoading,
+    error,
+    retryLoadSession,
+    setPendingAppearanceRating,
+  } = useSampleContext();
 
   // loading state
   if (isLoading) {
@@ -78,15 +83,51 @@ export default function HomeScreen({ navigation }: Props): React.JSX.Element {
     );
   }
 
-  // error state (or empty state aswell)
-  if (error || !currentSample) {
+  // error state
+  if (error) {
     return (
       <ScreenContainer testID="screen-home">
         <StudyAppBar />
         <View style={styles.centerContainer}>
-          <Text style={styles.infoText}>
-            {error || 'Kaikki näytteet on arvioitu.'}
-          </Text>
+          <Text style={styles.infoText}>{error}</Text>
+          <Pressable
+            onPress={() => {
+              void retryLoadSession();
+            }}
+            style={({ pressed }) => [
+              styles.retryButton,
+              pressed && styles.retryButtonPressed,
+            ]}
+            accessibilityRole="button"
+            accessibilityLabel="Yritä uudelleen"
+          >
+            <Text style={styles.retryButtonLabel}>Yritä uudelleen</Text>
+          </Pressable>
+        </View>
+      </ScreenContainer>
+    );
+  }
+
+  // empty state
+  if (!currentSample) {
+    return (
+      <ScreenContainer testID="screen-home">
+        <StudyAppBar />
+        <View style={styles.centerContainer}>
+          <Text style={styles.infoText}>Ei arvioitavia näytteitä juuri nyt.</Text>
+          <Pressable
+            onPress={() => {
+              void retryLoadSession();
+            }}
+            style={({ pressed }) => [
+              styles.retryButton,
+              pressed && styles.retryButtonPressed,
+            ]}
+            accessibilityRole="button"
+            accessibilityLabel="Päivitä näkymä"
+          >
+            <Text style={styles.retryButtonLabel}>Päivitä</Text>
+          </Pressable>
         </View>
       </ScreenContainer>
     );
@@ -302,5 +343,20 @@ const styles = StyleSheet.create({
     ...typography.body,
     color: colors.textSecondary,
     textAlign: 'center',
+  },
+  retryButton: {
+    marginTop: spacing.md,
+    borderRadius: 999,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.lg,
+    backgroundColor: colors.primary,
+  },
+  retryButtonPressed: {
+    opacity: 0.9,
+  },
+  retryButtonLabel: {
+    ...typography.body,
+    fontWeight: '700',
+    color: colors.onPrimary,
   },
 });

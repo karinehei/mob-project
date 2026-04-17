@@ -1,5 +1,6 @@
-import React, { useContext } from 'react';
+import React from 'react';
 import {
+  ActivityIndicator,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -10,7 +11,7 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import { ScreenContainer } from '../components/ScreenContainer';
 import { StudyAppBar } from '../components/StudyAppBar';
-import { SampleContext } from '../context/SampleContext';
+import { useSampleContext } from '../context/SampleContext';
 import { RootStackParamList } from '../navigation/AppNavigator';
 import { colors } from '../theme/colors';
 import { spacing } from '../theme/spacing';
@@ -22,8 +23,67 @@ type Props = NativeStackScreenProps<RootStackParamList, 'Sample'>;
  * Välinäkymä ennen arviointia — sama rakenne ja visuaalinen kieli kuin etusivulla.
  */
 export default function SampleScreen({ navigation }: Props): React.JSX.Element {
-  const sampleCtx = useContext(SampleContext);
-  const code = sampleCtx?.currentSample ?? '—';
+  const { currentSample, isLoading, error, retryLoadSession } = useSampleContext();
+
+  if (isLoading) {
+    return (
+      <ScreenContainer testID="screen-sample">
+        <StudyAppBar />
+        <View style={styles.centerContainer}>
+          <ActivityIndicator size="large" color={colors.primary} />
+          <Text style={styles.infoText}>Ladataan näytettä...</Text>
+        </View>
+      </ScreenContainer>
+    );
+  }
+
+  if (error) {
+    return (
+      <ScreenContainer testID="screen-sample">
+        <StudyAppBar />
+        <View style={styles.centerContainer}>
+          <Text style={styles.infoText}>{error}</Text>
+          <Pressable
+            onPress={() => {
+              void retryLoadSession();
+            }}
+            style={({ pressed }) => [
+              styles.retryButton,
+              pressed && styles.retryButtonPressed,
+            ]}
+            accessibilityRole="button"
+            accessibilityLabel="Yritä uudelleen"
+          >
+            <Text style={styles.retryButtonLabel}>Yritä uudelleen</Text>
+          </Pressable>
+        </View>
+      </ScreenContainer>
+    );
+  }
+
+  if (!currentSample) {
+    return (
+      <ScreenContainer testID="screen-sample">
+        <StudyAppBar />
+        <View style={styles.centerContainer}>
+          <Text style={styles.infoText}>Ei aktiivista näytettä arvioitavana.</Text>
+          <Pressable
+            onPress={() => {
+              void retryLoadSession();
+            }}
+            style={({ pressed }) => [
+              styles.retryButton,
+              pressed && styles.retryButtonPressed,
+            ]}
+            accessibilityRole="button"
+            accessibilityLabel="Päivitä näkymä"
+          >
+            <Text style={styles.retryButtonLabel}>Päivitä</Text>
+          </Pressable>
+        </View>
+      </ScreenContainer>
+    );
+  }
 
   return (
     <ScreenContainer testID="screen-sample">
@@ -40,7 +100,7 @@ export default function SampleScreen({ navigation }: Props): React.JSX.Element {
 
           <View style={styles.sampleCard}>
             <Text style={styles.sampleLabel}>Nykyinen näytekoodi:</Text>
-            <Text style={styles.sampleCode}>{code}</Text>
+            <Text style={styles.sampleCode}>{currentSample}</Text>
           </View>
 
           <Text style={styles.instruction}>
@@ -159,5 +219,32 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: colors.onPrimary,
     letterSpacing: 0.3,
+  },
+  centerContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: spacing.xl,
+  },
+  infoText: {
+    marginTop: spacing.md,
+    ...typography.body,
+    color: colors.textSecondary,
+    textAlign: 'center',
+  },
+  retryButton: {
+    marginTop: spacing.md,
+    borderRadius: 999,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.lg,
+    backgroundColor: colors.primary,
+  },
+  retryButtonPressed: {
+    opacity: 0.9,
+  },
+  retryButtonLabel: {
+    ...typography.body,
+    fontWeight: '700',
+    color: colors.onPrimary,
   },
 });
