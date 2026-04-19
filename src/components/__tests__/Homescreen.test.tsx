@@ -14,11 +14,12 @@ jest.mock('../../context/SampleContext', () => ({
     pendingAppearanceRating: null,
     setPendingAppearanceRating: jest.fn(),
     clearPendingAppearanceRating: jest.fn(),
+    resetSession: jest.fn(),
   }),
 }));
 
 describe('HomeScreen', () => {
-  it('renders placeholder text', () => {
+  it('renders correctly', () => {
     const { getByText } = render(
       <HomeScreen
         navigation={{ navigate: jest.fn() } as any}
@@ -26,6 +27,6 @@ describe('HomeScreen', () => {
       />,
     );
 
-    expect(getByText('Sensory Evaluation')).toBeTruthy();
+    expect(getByText('Aistinvarainen arviointi')).toBeTruthy();
   });
 });

@@ -146,19 +146,19 @@ export default function HomeScreen({ navigation }: Props): React.JSX.Element {
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
-          <Text style={styles.pageTitle}>Sensory Evaluation</Text>
+          <Text style={styles.pageTitle}>Aistinvarainen arviointi</Text>
 
           <View style={styles.sampleCard}>
-            <Text style={styles.sampleLabel}>Current Sample Code:</Text>
+            <Text style={styles.sampleLabel}>Nykyinen näytekoodi:</Text>
             <Text style={styles.sampleCode}>{currentSample}</Text>
           </View>
 
           <Text style={styles.instruction}>
-            Evaluate the pleasantness of the sample.
+            Arvioi näytteen miellyttävyyttä.
           </Text>
 
           <View style={styles.ratingCard}>
-            <Text style={styles.ratingCardTitle}>Ulkonäkö / Appearance</Text>
+            <Text style={styles.ratingCardTitle}>Ulkonäkö</Text>
             <Text style={styles.scaleLegend}>
               0 = Erittäin epämiellyttävä{'\n'}
               10 = Erittäin miellyttävä
@@ -199,7 +199,7 @@ export default function HomeScreen({ navigation }: Props): React.JSX.Element {
             accessibilityRole="button"
             accessibilityLabel="Seuraava näkymä"
           >
-            <Text style={styles.ctaLabel}>Next screen</Text>
+            <Text style={styles.ctaLabel}>Seuraava</Text>
           </Pressable>
         </View>
       </View>

@@ -16,18 +16,19 @@ export default function ResultScreen({
   navigation,
   route,
 }: Props): React.JSX.Element {
-  const saveSucceeded = route.params?.saveSucceeded === true;
-  const { nextSample, currentIndex, samples } = useSampleContext();
+  const { nextSample, resetSession } = useSampleContext();
 
-  const isLastSample = currentIndex >= samples.length - 1;
-  const flowCompleted = route.params?.flowCompleted === true || isLastSample;
+  const saveSucceeded = route.params?.saveSucceeded === true;
+  const flowCompleted = route.params?.flowCompleted === true;
 
   const primaryCtaLabel = flowCompleted
-    ? 'Paluu etusivulle'
+    ? 'Aloita uusi kierros'
     : 'Arvioi seuraava näyte';
 
   const handleNextStep = () => {
-    if (!flowCompleted) {
+    if (flowCompleted) {
+      resetSession();
+    } else {
       nextSample();
     }
     navigation.reset({

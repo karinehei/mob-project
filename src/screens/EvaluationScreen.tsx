@@ -39,7 +39,6 @@ export default function EvaluationScreen({
     currentSample,
     currentIndex,
     samples,
-    nextSample,
     sessionId,
     pendingAppearanceRating,
     clearPendingAppearanceRating,
@@ -158,21 +157,12 @@ export default function EvaluationScreen({
 
       const isLastSample = currentIndex >= samples.length - 1;
 
-      if (!isLastSample) {
-        nextSample();
-      }
-
       clearPendingAppearanceRating();
 
-      if (isLastSample) {
-        navigation.navigate('Result', {
-          saveSucceeded: true,
-          flowCompleted: true,
-        });
-        return;
-      }
-
-      navigation.navigate('Home');
+      navigation.navigate('Result', {
+        saveSucceeded: true,
+        flowCompleted: isLastSample,
+      });
     } catch (e) {
       setSaveError(saveErrorMessage(e));
     } finally {

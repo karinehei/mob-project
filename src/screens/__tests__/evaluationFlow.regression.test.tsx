@@ -2,7 +2,6 @@ import React from 'react';
 import { fireEvent, render, waitFor } from '@testing-library/react-native';
 
 import EvaluationScreen from '../../screens/EvaluationScreen';
-import HomeScreen from '../../screens/HomeScreen';
 import ResultScreen from '../../screens/ResultScreen';
 import { useSampleContext } from '../../context/SampleContext';
 import { saveEvaluation } from '../../services/evaluationService';
@@ -25,6 +24,10 @@ function buildContext(state: SampleState) {
   const nextSample = jest.fn(() => {
     state.currentIndex += 1;
   });
+  const resetSession = jest.fn(() => {
+    state.currentIndex = 0;
+    state.pendingAppearanceRating = null;
+  });
   const clearPendingAppearanceRating = jest.fn(() => {
     state.pendingAppearanceRating = null;
   });
@@ -40,13 +43,14 @@ function buildContext(state: SampleState) {
     isLoading: false,
     error: null,
     nextSample,
+    resetSession,
     retryLoadSession: jest.fn(async () => {}),
     pendingAppearanceRating: state.pendingAppearanceRating,
     setPendingAppearanceRating: jest.fn(),
     clearPendingAppearanceRating,
   });
 
-  return { nextSample, clearPendingAppearanceRating, makeValue };
+  return { nextSample, resetSession, clearPendingAppearanceRating, makeValue };
 }
 
 describe('evaluation flow regressions', () => {
@@ -61,7 +65,7 @@ describe('evaluation flow regressions', () => {
     jest.clearAllMocks();
   });
 
-  it('shows next sample after successful save', async () => {
+  it('onnistunut save -> Result ei-viimeisellä näytteellä', async () => {
     const state: SampleState = {
       samples: ['451', '926'],
       currentIndex: 0,
@@ -72,115 +76,78 @@ describe('evaluation flow regressions', () => {
     mockSaveEvaluation.mockResolvedValue(undefined);
 
     const evaluationNavigation = { navigate: jest.fn() } as any;
-    const homeNavigation = { navigate: jest.fn() } as any;
 
     const { getByLabelText } = render(
       <EvaluationScreen
         navigation={evaluationNavigation}
-        route={{ key: 'Evaluation-1', name: 'Evaluation' } as any}
+        route={{ key: 'Eval', name: 'Evaluation' } as any}
       />,
     );
 
     fireEvent.press(getByLabelText('Tallenna arvio'));
 
-    await waitFor(() => {
-      expect(mockSaveEvaluation).toHaveBeenCalledTimes(1);
-    });
-
-    expect(nextSample).toHaveBeenCalledTimes(1);
-    expect(evaluationNavigation.navigate).toHaveBeenCalledWith('Home');
-
-    const { getByText } = render(
-      <HomeScreen
-        navigation={homeNavigation}
-        route={{ key: 'Home-1', name: 'Home' } as any}
-      />,
-    );
-
-    expect(getByText('926')).toBeTruthy();
-  });
-
-  it('shows completion state after last sample save', async () => {
-    const state: SampleState = {
-      samples: ['451'],
-      currentIndex: 0,
-      pendingAppearanceRating: 8,
-    };
-    const { nextSample, makeValue } = buildContext(state);
-    mockUseSampleContext.mockImplementation(() => makeValue());
-    mockSaveEvaluation.mockResolvedValue(undefined);
-
-    const evaluationNavigation = { navigate: jest.fn() } as any;
-
-    const { getByLabelText } = render(
-      <EvaluationScreen
-        navigation={evaluationNavigation}
-        route={{ key: 'Evaluation-1', name: 'Evaluation' } as any}
-      />,
-    );
-
-    fireEvent.press(getByLabelText('Tallenna arvio'));
-
-    await waitFor(() => {
-      expect(mockSaveEvaluation).toHaveBeenCalledTimes(1);
-    });
+    await waitFor(() => expect(mockSaveEvaluation).toHaveBeenCalledTimes(1));
 
     expect(nextSample).not.toHaveBeenCalled();
     expect(evaluationNavigation.navigate).toHaveBeenCalledWith('Result', {
       saveSucceeded: true,
-      flowCompleted: true,
+      flowCompleted: false,
     });
-
-    const { getByText } = render(
-      <ResultScreen
-        navigation={{ navigate: jest.fn() } as any}
-        route={
-          {
-            key: 'Result-1',
-            name: 'Result',
-            params: { saveSucceeded: true, flowCompleted: true },
-          } as any
-        }
-      />,
-    );
-
-    expect(getByText('Kaikki arvioitu')).toBeTruthy();
-    expect(getByText('Paluu etusivulle')).toBeTruthy();
   });
 
-  it('keeps current sample and shows save error on failure', async () => {
+  it('Result -> seuraava näyte -> Home', () => {
     const state: SampleState = {
       samples: ['451', '926'],
       currentIndex: 0,
-      pendingAppearanceRating: 8,
+      pendingAppearanceRating: null,
     };
-    const { nextSample, makeValue } = buildContext(state);
+    const { nextSample, resetSession, makeValue } = buildContext(state);
     mockUseSampleContext.mockImplementation(() => makeValue());
-    mockSaveEvaluation.mockRejectedValue(new Error('Tallennus epäonnistui'));
 
-    const evaluationNavigation = { navigate: jest.fn() } as any;
-    const homeNavigation = { navigate: jest.fn() } as any;
+    const resultNavigation = { reset: jest.fn() } as any;
 
-    const { getByLabelText, findByText } = render(
-      <EvaluationScreen
-        navigation={evaluationNavigation}
-        route={{ key: 'Evaluation-1', name: 'Evaluation' } as any}
+    const { getByLabelText } = render(
+      <ResultScreen
+        navigation={resultNavigation}
+        route={{ params: { saveSucceeded: true, flowCompleted: false } } as any}
       />,
     );
 
-    fireEvent.press(getByLabelText('Tallenna arvio'));
+    fireEvent.press(getByLabelText('Arvioi seuraava näyte'));
 
-    expect(await findByText('Tallennus epäonnistui')).toBeTruthy();
+    expect(nextSample).toHaveBeenCalledTimes(1);
+    expect(resetSession).not.toHaveBeenCalled();
+    expect(resultNavigation.reset).toHaveBeenCalledWith({
+      index: 0,
+      routes: [{ name: 'Home' }],
+    });
+  });
+
+  it('viimeinen näyte -> Result -> uusi kierros -> Home', () => {
+    const state: SampleState = {
+      samples: ['451'],
+      currentIndex: 0,
+      pendingAppearanceRating: null,
+    };
+    const { nextSample, resetSession, makeValue } = buildContext(state);
+    mockUseSampleContext.mockImplementation(() => makeValue());
+
+    const resultNavigation = { reset: jest.fn() } as any;
+
+    const { getByLabelText } = render(
+      <ResultScreen
+        navigation={resultNavigation}
+        route={{ params: { saveSucceeded: true, flowCompleted: true } } as any}
+      />,
+    );
+
+    fireEvent.press(getByLabelText('Aloita uusi kierros'));
+
     expect(nextSample).not.toHaveBeenCalled();
-    expect(evaluationNavigation.navigate).not.toHaveBeenCalled();
-
-    const { getByText } = render(
-      <HomeScreen
-        navigation={homeNavigation}
-        route={{ key: 'Home-1', name: 'Home' } as any}
-      />,
-    );
-
-    expect(getByText('451')).toBeTruthy();
+    expect(resetSession).toHaveBeenCalledTimes(1);
+    expect(resultNavigation.reset).toHaveBeenCalledWith({
+      index: 0,
+      routes: [{ name: 'Home' }],
+    });
   });
 });
