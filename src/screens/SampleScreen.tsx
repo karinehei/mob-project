@@ -23,7 +23,8 @@ type Props = NativeStackScreenProps<RootStackParamList, 'Sample'>;
  * Välinäkymä ennen arviointia — sama rakenne ja visuaalinen kieli kuin etusivulla.
  */
 export default function SampleScreen({ navigation }: Props): React.JSX.Element {
-  const { currentSample, isLoading, error, retryLoadSession } = useSampleContext();
+  const { currentSample, isLoading, error, retryLoadSession } =
+    useSampleContext();
 
   if (isLoading) {
     return (
@@ -44,8 +45,8 @@ export default function SampleScreen({ navigation }: Props): React.JSX.Element {
         <View style={styles.centerContainer}>
           <Text style={styles.infoText}>{error}</Text>
           <Pressable
-            onPress={() => {
-              void retryLoadSession();
+            onPress={async () => {
+              await retryLoadSession();
             }}
             style={({ pressed }) => [
               styles.retryButton,
@@ -66,10 +67,12 @@ export default function SampleScreen({ navigation }: Props): React.JSX.Element {
       <ScreenContainer testID="screen-sample">
         <StudyAppBar />
         <View style={styles.centerContainer}>
-          <Text style={styles.infoText}>Ei aktiivista näytettä arvioitavana.</Text>
+          <Text style={styles.infoText}>
+            Ei aktiivista näytettä arvioitavana.
+          </Text>
           <Pressable
-            onPress={() => {
-              void retryLoadSession();
+            onPress={async () => {
+              await retryLoadSession();
             }}
             style={({ pressed }) => [
               styles.retryButton,

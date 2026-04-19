@@ -91,8 +91,8 @@ export default function HomeScreen({ navigation }: Props): React.JSX.Element {
         <View style={styles.centerContainer}>
           <Text style={styles.infoText}>{error}</Text>
           <Pressable
-            onPress={() => {
-              void retryLoadSession();
+            onPress={async () => {
+              await retryLoadSession();
             }}
             style={({ pressed }) => [
               styles.retryButton,
@@ -114,10 +114,12 @@ export default function HomeScreen({ navigation }: Props): React.JSX.Element {
       <ScreenContainer testID="screen-home">
         <StudyAppBar />
         <View style={styles.centerContainer}>
-          <Text style={styles.infoText}>Ei arvioitavia näytteitä juuri nyt.</Text>
+          <Text style={styles.infoText}>
+            Ei arvioitavia näytteitä juuri nyt.
+          </Text>
           <Pressable
-            onPress={() => {
-              void retryLoadSession();
+            onPress={async () => {
+              await retryLoadSession();
             }}
             style={({ pressed }) => [
               styles.retryButton,

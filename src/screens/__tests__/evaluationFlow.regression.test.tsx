@@ -134,16 +134,18 @@ describe('evaluation flow regressions', () => {
     const { getByText } = render(
       <ResultScreen
         navigation={{ navigate: jest.fn() } as any}
-        route={{
-          key: 'Result-1',
-          name: 'Result',
-          params: { saveSucceeded: true, flowCompleted: true },
-        } as any}
+        route={
+          {
+            key: 'Result-1',
+            name: 'Result',
+            params: { saveSucceeded: true, flowCompleted: true },
+          } as any
+        }
       />,
     );
 
     expect(getByText('Kaikki arvioitu')).toBeTruthy();
-    expect(getByText('Aloita uusi kierros')).toBeTruthy();
+    expect(getByText('Paluu etusivulle')).toBeTruthy();
   });
 
   it('keeps current sample and shows save error on failure', async () => {
