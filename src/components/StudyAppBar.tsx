@@ -23,9 +23,7 @@ export function StudyAppBar(): React.JSX.Element {
     <View style={styles.appBar}>
       <Pressable
         style={styles.appBarIconHit}
-        onPress={() => {
-          /* TODO: drawer / nav when defined */
-        }}
+        onPress={() => {}}
         accessibilityRole="button"
         accessibilityLabel="Valikko"
       >

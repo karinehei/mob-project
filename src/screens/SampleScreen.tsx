@@ -157,6 +157,11 @@ const styles = StyleSheet.create({
     padding: spacing.lg,
     borderRadius: 16,
     backgroundColor: colors.sampleCardBg,
+    shadowColor: colors.primary,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.12,
+    shadowRadius: 10,
+    elevation: 5,
   },
   sampleLabel: {
     ...typography.caption,
@@ -213,6 +218,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: colors.primary,
+    shadowColor: colors.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+    elevation: 5,
   },
   ctaPressed: {
     opacity: 0.9,

@@ -1,4 +1,4 @@
-export type { EntityId, FoodItemPlaceholder, StudySessionPlaceholder } from './models';
+export type { EntityId } from './models';
 export type {
   Evaluation,
   EvaluationCriterion,
