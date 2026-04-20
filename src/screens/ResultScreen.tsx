@@ -1,11 +1,5 @@
 import React from 'react';
-import {
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import { ScreenContainer } from '../components/ScreenContainer';
@@ -14,6 +8,7 @@ import { RootStackParamList } from '../navigation/AppNavigator';
 import { colors } from '../theme/colors';
 import { spacing } from '../theme/spacing';
 import { typography } from '../theme/typography';
+import { useSampleContext } from '../context/SampleContext';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Result'>;
 
@@ -21,11 +16,26 @@ export default function ResultScreen({
   navigation,
   route,
 }: Props): React.JSX.Element {
+  const { nextSample, resetSession } = useSampleContext();
+
   const saveSucceeded = route.params?.saveSucceeded === true;
   const flowCompleted = route.params?.flowCompleted === true;
+
   const primaryCtaLabel = flowCompleted
     ? 'Aloita uusi kierros'
-    : 'Siirry etusivulle';
+    : 'Arvioi seuraava näyte';
+
+  const handleNextStep = () => {
+    if (flowCompleted) {
+      resetSession();
+    } else {
+      nextSample();
+    }
+    navigation.reset({
+      index: 0,
+      routes: [{ name: 'Home' }],
+    });
+  };
 
   return (
     <ScreenContainer testID="screen-result">
@@ -44,14 +54,18 @@ export default function ResultScreen({
 
           <View style={styles.infoCard}>
             <Text style={styles.infoTitle}>
-              {flowCompleted ? 'Kaikki arvioitu' : saveSucceeded ? 'Tallennettu' : 'Tulos'}
+              {flowCompleted
+                ? 'Kaikki arvioitu'
+                : saveSucceeded
+                  ? 'Tallennettu'
+                  : 'Tulos'}
             </Text>
             <Text style={styles.infoBody}>
               {flowCompleted
-                ? 'Viimeinenkin näyte arvioitiin onnistuneesti. Voit palata etusivulle aloittamaan uuden kierroksen.'
+                ? 'Viimeinenkin näyte arvioitiin onnistuneesti. Kiitos osallistumisesta!'
                 : saveSucceeded
-                ? 'Arvio tallennettu Firestoreen. Voit palata etusivulle jatkamaan.'
-                : 'Voit palata etusivulle aloittaaksesi uuden kierroksen.'}
+                  ? 'Arvio tallennettu Firestoreen. Siirry seuraavaan näytteeseen.'
+                  : 'Voit palata etusivulle aloittaaksesi uuden kierroksen.'}
             </Text>
           </View>
         </ScrollView>
@@ -59,7 +73,7 @@ export default function ResultScreen({
         <View style={styles.footer}>
           <Pressable
             style={({ pressed }) => [styles.cta, pressed && styles.ctaPressed]}
-            onPress={() => navigation.navigate('Home')}
+            onPress={handleNextStep}
             accessibilityRole="button"
             accessibilityLabel={primaryCtaLabel}
           >

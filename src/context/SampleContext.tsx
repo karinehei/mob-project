@@ -21,6 +21,7 @@ interface SampleContextType {
   pendingAppearanceRating: number | null;
   setPendingAppearanceRating: (rating: number) => void;
   clearPendingAppearanceRating: () => void;
+  resetSession: () => void;
 }
 
 export const SampleContext = createContext<SampleContextType | undefined>(
@@ -69,7 +70,9 @@ export const SampleProvider: React.FC<ProviderProps> = ({ children }) => {
       setSessionId(null);
       setSamples([]);
       setCurrentIndex(0);
-      setError('Istunnon haku epäonnistui. Tarkista yhteys ja yritä uudelleen.');
+      setError(
+        'Istunnon haku epäonnistui. Tarkista yhteys ja yritä uudelleen.',
+      );
     } finally {
       setIsLoading(false);
     }
@@ -92,6 +95,11 @@ export const SampleProvider: React.FC<ProviderProps> = ({ children }) => {
     setPendingAppearanceRating(null);
   };
 
+  const resetSession = () => {
+    setCurrentIndex(0);
+    setPendingAppearanceRating(null);
+  };
+
   return (
     <SampleContext.Provider
       value={{
@@ -106,6 +114,7 @@ export const SampleProvider: React.FC<ProviderProps> = ({ children }) => {
         pendingAppearanceRating,
         setPendingAppearanceRating,
         clearPendingAppearanceRating,
+        resetSession,
       }}
     >
       {children}

@@ -17,7 +17,10 @@ import { saveEvaluation } from '../services/evaluationService';
 import { colors } from '../theme/colors';
 import { spacing } from '../theme/spacing';
 import { typography } from '../theme/typography';
-import { validateEvaluation, ValidationError } from '../validation/validateEvaluation';
+import {
+  validateEvaluation,
+  ValidationError,
+} from '../validation/validateEvaluation';
 import type { EvaluationPayload } from '../types/evaluation';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Evaluation'>;
@@ -36,7 +39,6 @@ export default function EvaluationScreen({
     currentSample,
     currentIndex,
     samples,
-    nextSample,
     sessionId,
     pendingAppearanceRating,
     clearPendingAppearanceRating,
@@ -48,12 +50,12 @@ export default function EvaluationScreen({
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
 
-  const [validationErrors, setValidationErrors] = useState<ValidationError[]>([]);
+  const [validationErrors, setValidationErrors] = useState<ValidationError[]>(
+    [],
+  );
 
   const canSave =
-    Boolean(currentSample) &&
-    pendingAppearanceRating !== null &&
-    !saving;
+    Boolean(currentSample) && pendingAppearanceRating !== null && !saving;
 
   if (isLoading) {
     return (
@@ -74,8 +76,8 @@ export default function EvaluationScreen({
         <View style={styles.centerContainer}>
           <Text style={styles.infoText}>{error}</Text>
           <Pressable
-            onPress={() => {
-              void retryLoadSession();
+            onPress={async () => {
+              await retryLoadSession();
             }}
             style={({ pressed }) => [
               styles.retryButton,
@@ -96,7 +98,9 @@ export default function EvaluationScreen({
       <ScreenContainer testID="screen-evaluation">
         <StudyAppBar />
         <View style={styles.centerContainer}>
-          <Text style={styles.infoText}>Ei arvioitavaa näytettä tällä hetkellä.</Text>
+          <Text style={styles.infoText}>
+            Ei arvioitavaa näytettä tällä hetkellä.
+          </Text>
           <Pressable
             onPress={() => navigation.navigate('Home')}
             style={({ pressed }) => [
@@ -119,61 +123,52 @@ export default function EvaluationScreen({
       return;
     }
 
-  const payload: EvaluationPayload = {
-    sampleId: currentSample,
-    scores: {
-      appearance: pendingAppearanceRating,
-    },
-  };
+    const payload: EvaluationPayload = {
+      sampleId: currentSample,
+      scores: {
+        appearance: pendingAppearanceRating,
+      },
+    };
 
-  const errors = validateEvaluation(payload, [
-    {
-      id: 'appearance',
-      label: 'Ulkonäkö',
-      minScore: 1,
-      maxScore: 10,
-    },
-  ]);
+    const errors = validateEvaluation(payload, [
+      {
+        id: 'appearance',
+        label: 'Ulkonäkö',
+        minScore: 1,
+        maxScore: 10,
+      },
+    ]);
 
-  if (errors.length > 0) {
-    setValidationErrors(errors);
-    return;
-  }
-
-  setSaving(true);
-  setSaveError(null);
-  setValidationErrors([]);
-
-  try {
-    await saveEvaluation({
-      sampleCode: currentSample,
-      rating: pendingAppearanceRating,
-      sessionId,
-    });
-
-    const isLastSample = currentIndex >= samples.length - 1;
-
-    if (!isLastSample) {
-      nextSample();
-    }
-
-    clearPendingAppearanceRating();
-
-    if (isLastSample) {
-      navigation.navigate('Result', {
-        saveSucceeded: true,
-        flowCompleted: true,
-      });
+    if (errors.length > 0) {
+      setValidationErrors(errors);
       return;
     }
 
-    navigation.navigate('Home');
-  } catch (e) {
-    setSaveError(saveErrorMessage(e));
-  } finally {
-    setSaving(false);
-  }
-};
+    setSaving(true);
+    setSaveError(null);
+    setValidationErrors([]);
+
+    try {
+      await saveEvaluation({
+        sampleCode: currentSample,
+        rating: pendingAppearanceRating,
+        sessionId,
+      });
+
+      const isLastSample = currentIndex >= samples.length - 1;
+
+      clearPendingAppearanceRating();
+
+      navigation.navigate('Result', {
+        saveSucceeded: true,
+        flowCompleted: isLastSample,
+      });
+    } catch (e) {
+      setSaveError(saveErrorMessage(e));
+    } finally {
+      setSaving(false);
+    }
+  };
 
   return (
     <ScreenContainer testID="screen-evaluation">
@@ -191,9 +186,7 @@ export default function EvaluationScreen({
           <Text style={styles.lead}>Tallenna arvio Firestoreen</Text>
 
           <View style={styles.infoCard}>
-            <Text style={styles.infoTitle}>
-              Istunto: {sessionId ?? '—'}
-            </Text>
+            <Text style={styles.infoTitle}>Istunto: {sessionId ?? '—'}</Text>
             <Text style={styles.infoBody}>
               Näyte: {currentSample ?? '—'}
               {'\n'}
