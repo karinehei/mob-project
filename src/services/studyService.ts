@@ -17,13 +17,15 @@ export interface StudySession {
 
 const SEEDED_SESSION_DOC_ID = 'seed-dev-session';
 
-function mapSession(
+export function mapSession(
   id: string,
   data: Record<string, unknown> | undefined,
 ): StudySession {
   return {
     id,
-    samples: Array.isArray(data?.samples) ? data.samples.map(String) : [],
+    samples: Array.isArray(data?.samples)
+      ? data.samples.map(String)
+      : [],
   };
 }
 
