@@ -1,31 +1,15 @@
 import React from 'react';
-import { StyleSheet, Text } from 'react-native';
+import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
-import { PlaceholderBlock } from '../components/PlaceholderBlock';
-import { ScreenContainer } from '../components/ScreenContainer';
-import { colors } from '../theme/colors';
-import { spacing } from '../theme/spacing';
-import { typography } from '../theme/typography';
+import HomeScreen from './HomeScreen';
+import { RootStackParamList } from '../navigation/AppNavigator';
+
+type Props = NativeStackScreenProps<RootStackParamList, 'Study'>;
 
 /**
- * Placeholder for the study / task flow screen. Wire into navigator when flows exist.
+ * Erillinen Study-reitti pidetään navigaatiossa tuotevaatimusten vuoksi.
+ * Toistaiseksi se käyttää tarkoituksella samaa tuotantovalmiin UI:n flowita kuin Home.
  */
-export function StudyScreen(): React.JSX.Element {
-  return (
-    <ScreenContainer testID="screen-study">
-      <Text style={styles.title}>Study</Text>
-      <PlaceholderBlock
-        title="Opiskelunäkymä"
-        body="TODO: pisteytys ja tehtävät — ei vielä toteutettu."
-      />
-    </ScreenContainer>
-  );
+export default function StudyScreen(props: Props): React.JSX.Element {
+  return <HomeScreen {...props} />;
 }
-
-const styles = StyleSheet.create({
-  title: {
-    ...typography.title,
-    color: colors.textPrimary,
-    padding: spacing.md,
-  },
-});

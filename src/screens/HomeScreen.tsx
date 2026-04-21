@@ -18,7 +18,7 @@ import { useSampleContext } from '../context/SampleContext';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation/AppNavigator';
 
-type Props = NativeStackScreenProps<RootStackParamList, 'Home'>;
+type Props = NativeStackScreenProps<RootStackParamList, 'Home' | 'Study'>;
 
 const RATING_ROW_A = [0, 1, 2, 3, 4, 5] as const;
 const RATING_ROW_B = [6, 7, 8, 9, 10] as const;
@@ -232,6 +232,11 @@ const styles = StyleSheet.create({
     padding: spacing.lg,
     borderRadius: 16,
     backgroundColor: colors.sampleCardBg,
+    shadowColor: colors.primary,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.12,
+    shadowRadius: 10,
+    elevation: 5,
   },
   sampleLabel: {
     ...typography.caption,
@@ -324,6 +329,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: colors.primary,
+    shadowColor: colors.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+    elevation: 5,
   },
   ctaPressed: {
     opacity: 0.9,
