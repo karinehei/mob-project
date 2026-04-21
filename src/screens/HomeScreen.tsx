@@ -18,7 +18,7 @@ import { useSampleContext } from '../context/SampleContext';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation/AppNavigator';
 
-type Props = NativeStackScreenProps<RootStackParamList, 'Home'>;
+type Props = NativeStackScreenProps<RootStackParamList, 'Home' | 'Study'>;
 
 const RATING_ROW_A = [0, 1, 2, 3, 4, 5] as const;
 const RATING_ROW_B = [6, 7, 8, 9, 10] as const;

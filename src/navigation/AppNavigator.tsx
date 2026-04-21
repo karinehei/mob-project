@@ -3,12 +3,14 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 import HomeScreen from '../screens/HomeScreen';
+import StudyScreen from '../screens/StudyScreen';
 import SampleScreen from '../screens/SampleScreen';
 import EvaluationScreen from '../screens/EvaluationScreen';
 import ResultScreen from '../screens/ResultScreen';
 
 export type RootStackParamList = {
   Home: undefined;
+  Study: undefined;
   Sample: undefined;
   Evaluation: undefined;
   Result:
@@ -29,6 +31,11 @@ export function AppNavigator(): React.JSX.Element {
           name="Home"
           component={HomeScreen}
           options={{ title: 'Etusivu' }}
+        />
+        <Stack.Screen
+          name="Study"
+          component={StudyScreen}
+          options={{ title: 'Aistinvarainen arviointi' }}
         />
         <Stack.Screen
           name="Sample"
