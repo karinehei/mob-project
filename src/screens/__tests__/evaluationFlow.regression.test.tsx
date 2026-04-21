@@ -150,4 +150,75 @@ describe('evaluation flow regressions', () => {
       routes: [{ name: 'Home' }],
     });
   });
+
+  it('SMOKE: koko flow toimii (Evaluation -> Result -> Home)', async () => {
+    const state: SampleState = {
+      samples: ['451', '926'],
+      currentIndex: 0,
+      pendingAppearanceRating: 8,
+    };
+
+    const {
+      nextSample,
+      resetSession,
+      clearPendingAppearanceRating,
+      makeValue,
+    } = buildContext(state);
+
+    mockUseSampleContext.mockImplementation(() => makeValue());
+    mockSaveEvaluation.mockResolvedValue(undefined);
+
+    // RENDER EVALUATION
+    const navigateMock = jest.fn();
+
+    const { getByLabelText, unmount } = render(
+      <EvaluationScreen
+        navigation={{ navigate: navigateMock } as any}
+        route={{ key: 'Eval', name: 'Evaluation' } as any}
+      />,
+    );
+
+    // USER ACTION
+    fireEvent.press(getByLabelText('Tallenna arvio'));
+
+    // ASSERT SAVE
+    await waitFor(() => {
+      expect(mockSaveEvaluation).toHaveBeenCalledTimes(1);
+    });
+
+    // ASSERT NAVIGATION
+    expect(navigateMock).toHaveBeenCalledWith('Result', {
+      saveSucceeded: true,
+      flowCompleted: false,
+    });
+
+    // simuloi että siirryttiin ResultScreeniin
+    unmount();
+
+    // RENDER RESULT
+    const resetMock = jest.fn();
+
+    const { getByLabelText: getResultByLabel } = render(
+      <ResultScreen
+        navigation={{ reset: resetMock } as any}
+        route={{
+          params: { saveSucceeded: true, flowCompleted: false },
+        } as any}
+      />,
+    );
+    // USER ACTION RESULT
+    fireEvent.press(getResultByLabel('Arvioi seuraava näyte'));
+
+    // ASSERT NEXT STEP
+    expect(nextSample).toHaveBeenCalledTimes(1);
+    expect(resetSession).not.toHaveBeenCalled();
+
+    expect(resetMock).toHaveBeenCalledWith({
+      index: 0,
+      routes: [{ name: 'Home' }],
+    });
+
+    // varmista että rating tyhjennettiin
+    expect(clearPendingAppearanceRating).toHaveBeenCalled();
+  });
 });
