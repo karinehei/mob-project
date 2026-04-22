@@ -1,37 +1,38 @@
 import { validateEvaluation } from '../validateEvaluation';
 
 import {
-  EvaluationCriterion,
   EvaluationPayload,
 } from '../../types/evaluation';
+import { QuestionnaireQuestion } from '../../types/questionnaire';
 
 describe('validateEvaluation', () => {
-  const criteria: EvaluationCriterion[] = [
+  const questions: QuestionnaireQuestion[] = [
     {
       id: 'taste',
       label: 'Maku',
+      type: 'scale',
       minScore: 1,
       maxScore: 5,
     },
     {
-      id: 'texture',
-      label: 'Rakenne',
-      minScore: 1,
-      maxScore: 5,
+      id: 'attributes',
+      label: 'Ominaisuudet',
+      type: 'multiSelect',
+      options: ['makea', 'hapan'],
     },
   ];
 
   const validPayload: EvaluationPayload = {
     sampleId: 'sample-1',
-    scores: {
+    answers: {
       taste: 4,
-      texture: 5,
+      attributes: ['makea'],
     },
   };
 
   // VALID CASE
   it('palauttaa tyhjän listan validilla datalla', () => {
-    const result = validateEvaluation(validPayload, criteria);
+    const result = validateEvaluation(validPayload, questions);
 
     expect(result).toEqual([]);
   });
@@ -43,7 +44,7 @@ describe('validateEvaluation', () => {
       sampleId: '',
     };
 
-    const result = validateEvaluation(payload, criteria);
+    const result = validateEvaluation(payload, questions);
 
     expect(result).toContainEqual({
       field: 'sampleId',
@@ -55,32 +56,32 @@ describe('validateEvaluation', () => {
   it('antaa virheen jos scores puuttuu', () => {
     const payload = {
       sampleId: 'sample-1',
-      scores: undefined,
+      answers: undefined,
     } as any;
 
-    const result = validateEvaluation(payload, criteria);
+    const result = validateEvaluation(payload, questions);
 
     expect(result).toContainEqual({
-      field: 'scores',
-      message: 'Pisteet puuttuvat',
+      field: 'answers',
+      message: 'Vastaukset puuttuvat',
     });
   });
 
-  // score puuttuu kriteeriltä
+  // puuttuva monivalinta
   it('antaa virheen jos yksittäinen score puuttuu', () => {
     const payload: EvaluationPayload = {
       sampleId: 'sample-1',
-      scores: {
+      answers: {
         taste: 4,
-        // texture puuttuu
+        // attributes puuttuu
       } as any,
     };
 
-    const result = validateEvaluation(payload, criteria);
+    const result = validateEvaluation(payload, questions);
 
     expect(result).toContainEqual({
-      field: 'scores.texture',
-      message: 'Rakenne puuttuu',
+      field: 'answers.attributes',
+      message: 'Ominaisuudet puuttuu',
     });
   });
 
@@ -88,16 +89,16 @@ describe('validateEvaluation', () => {
   it('antaa virheen jos score ei ole numero', () => {
     const payload: EvaluationPayload = {
       sampleId: 'sample-1',
-      scores: {
+      answers: {
         taste: 'bad' as any,
-        texture: 3,
+        attributes: ['makea'],
       },
     };
 
-    const result = validateEvaluation(payload, criteria);
+    const result = validateEvaluation(payload, questions);
 
     expect(result).toContainEqual({
-      field: 'scores.taste',
+      field: 'answers.taste',
       message: 'Maku ei ole numero',
     });
   });
@@ -106,16 +107,16 @@ describe('validateEvaluation', () => {
   it('antaa virheen jos score on NaN', () => {
     const payload: EvaluationPayload = {
       sampleId: 'sample-1',
-      scores: {
+      answers: {
         taste: NaN,
-        texture: 3,
+        attributes: ['makea'],
       },
     };
 
-    const result = validateEvaluation(payload, criteria);
+    const result = validateEvaluation(payload, questions);
 
     expect(result).toContainEqual({
-      field: 'scores.taste',
+      field: 'answers.taste',
       message: 'Maku ei ole numero',
     });
   });
@@ -124,16 +125,16 @@ describe('validateEvaluation', () => {
   it('antaa virheen jos score on liian pieni', () => {
     const payload: EvaluationPayload = {
       sampleId: 'sample-1',
-      scores: {
+      answers: {
         taste: 0,
-        texture: 3,
+        attributes: ['makea'],
       },
     };
 
-    const result = validateEvaluation(payload, criteria);
+    const result = validateEvaluation(payload, questions);
 
     expect(result).toContainEqual({
-      field: 'scores.taste',
+      field: 'answers.taste',
       message: 'Maku oltava välillä 1-5',
     });
   });
@@ -142,17 +143,51 @@ describe('validateEvaluation', () => {
   it('antaa virheen jos score on liian suuri', () => {
     const payload: EvaluationPayload = {
       sampleId: 'sample-1',
-      scores: {
+      answers: {
         taste: 6,
-        texture: 3,
+        attributes: ['makea'],
       },
     };
 
-    const result = validateEvaluation(payload, criteria);
+    const result = validateEvaluation(payload, questions);
 
     expect(result).toContainEqual({
-      field: 'scores.taste',
+      field: 'answers.taste',
       message: 'Maku oltava välillä 1-5',
+    });
+  });
+
+  it('antaa virheen jos monivalinta ei ole lista', () => {
+    const payload: EvaluationPayload = {
+      sampleId: 'sample-1',
+      answers: {
+        taste: 4,
+        attributes: 'makea' as any,
+      },
+    };
+
+    const result = validateEvaluation(payload, questions);
+
+    expect(result).toContainEqual({
+      field: 'answers.attributes',
+      message: 'Ominaisuudet ei ole valintalista',
+    });
+  });
+
+  it('antaa virheen jos monivalinnassa on tuntematon vaihtoehto', () => {
+    const payload: EvaluationPayload = {
+      sampleId: 'sample-1',
+      answers: {
+        taste: 4,
+        attributes: ['karvas'],
+      },
+    };
+
+    const result = validateEvaluation(payload, questions);
+
+    expect(result).toContainEqual({
+      field: 'answers.attributes',
+      message: 'Ominaisuudet sisältää tuntemattoman vaihtoehdon',
     });
   });
 });

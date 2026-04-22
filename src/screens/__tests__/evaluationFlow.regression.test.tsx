@@ -17,7 +17,6 @@ jest.mock('../../services/evaluationService', () => ({
 type SampleState = {
   samples: string[];
   currentIndex: number;
-  pendingAppearanceRating: number | null;
 };
 
 function buildContext(state: SampleState) {
@@ -26,10 +25,6 @@ function buildContext(state: SampleState) {
   });
   const resetSession = jest.fn(() => {
     state.currentIndex = 0;
-    state.pendingAppearanceRating = null;
-  });
-  const clearPendingAppearanceRating = jest.fn(() => {
-    state.pendingAppearanceRating = null;
   });
 
   const makeValue = () => ({
@@ -37,7 +32,7 @@ function buildContext(state: SampleState) {
     questionnaireTitle: 'Aistinvarainen arviointi',
     questionnaireQuestions: [
       {
-        id: 'q1',
+        id: 'appearance',
         label: 'Ulkonäkö',
         type: 'scale' as const,
         minScore: 0,
@@ -55,12 +50,9 @@ function buildContext(state: SampleState) {
     nextSample,
     resetSession,
     retryLoadSession: jest.fn(async () => {}),
-    pendingAppearanceRating: state.pendingAppearanceRating,
-    setPendingAppearanceRating: jest.fn(),
-    clearPendingAppearanceRating,
   });
 
-  return { nextSample, resetSession, clearPendingAppearanceRating, makeValue };
+  return { nextSample, resetSession, makeValue };
 }
 
 describe('evaluation flow regressions', () => {
@@ -79,7 +71,6 @@ describe('evaluation flow regressions', () => {
     const state: SampleState = {
       samples: ['451', '926'],
       currentIndex: 0,
-      pendingAppearanceRating: 8,
     };
     const { nextSample, makeValue } = buildContext(state);
     mockUseSampleContext.mockImplementation(() => makeValue());
@@ -94,6 +85,7 @@ describe('evaluation flow regressions', () => {
       />,
     );
 
+    fireEvent.press(getByLabelText('Ulkonäkö: arvo 8'));
     fireEvent.press(getByLabelText('Tallenna arvio'));
 
     await waitFor(() => expect(mockSaveEvaluation).toHaveBeenCalledTimes(1));
@@ -109,7 +101,6 @@ describe('evaluation flow regressions', () => {
     const state: SampleState = {
       samples: ['451', '926'],
       currentIndex: 0,
-      pendingAppearanceRating: null,
     };
     const { nextSample, resetSession, makeValue } = buildContext(state);
     mockUseSampleContext.mockImplementation(() => makeValue());
@@ -137,7 +128,6 @@ describe('evaluation flow regressions', () => {
     const state: SampleState = {
       samples: ['451'],
       currentIndex: 0,
-      pendingAppearanceRating: null,
     };
     const { nextSample, resetSession, makeValue } = buildContext(state);
     mockUseSampleContext.mockImplementation(() => makeValue());
@@ -165,13 +155,11 @@ describe('evaluation flow regressions', () => {
     const state: SampleState = {
       samples: ['451', '926'],
       currentIndex: 0,
-      pendingAppearanceRating: 8,
     };
 
     const {
       nextSample,
       resetSession,
-      clearPendingAppearanceRating,
       makeValue,
     } = buildContext(state);
 
@@ -189,6 +177,7 @@ describe('evaluation flow regressions', () => {
     );
 
     // USER ACTION
+    fireEvent.press(getByLabelText('Ulkonäkö: arvo 8'));
     fireEvent.press(getByLabelText('Tallenna arvio'));
 
     // ASSERT SAVE
@@ -228,7 +217,5 @@ describe('evaluation flow regressions', () => {
       routes: [{ name: 'Home' }],
     });
 
-    // varmista että rating tyhjennettiin
-    expect(clearPendingAppearanceRating).toHaveBeenCalled();
   });
 });
