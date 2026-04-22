@@ -23,7 +23,7 @@ function buildContext(state: SampleState) {
   const nextSample = jest.fn(() => {
     state.currentIndex += 1;
   });
-  const resetSession = jest.fn(() => {
+  const resetSession = jest.fn(async () => {
     state.currentIndex = 0;
   });
 
@@ -70,6 +70,7 @@ function buildContext(state: SampleState) {
         : null,
     isLoading: false,
     error: null,
+    updateStatusMessage: null,
     nextSample,
     resetSession,
     retryLoadSession: jest.fn(async () => {}),
@@ -177,9 +178,11 @@ describe('evaluation flow regressions', () => {
 
     expect(nextSample).not.toHaveBeenCalled();
     expect(resetSession).toHaveBeenCalledTimes(1);
-    expect(resultNavigation.reset).toHaveBeenCalledWith({
-      index: 0,
-      routes: [{ name: 'Home' }],
+    return waitFor(() => {
+      expect(resultNavigation.reset).toHaveBeenCalledWith({
+        index: 0,
+        routes: [{ name: 'Home' }],
+      });
     });
   });
 
@@ -291,7 +294,7 @@ describe('evaluation flow regressions', () => {
     };
 
     const nextSample = jest.fn();
-    const resetSession = jest.fn();
+    const resetSession = jest.fn(async () => {});
 
     mockUseSampleContext.mockImplementation(() => ({
       sessionId: 'sess-1',
@@ -318,6 +321,7 @@ describe('evaluation flow regressions', () => {
       currentSample: state.samples[state.currentIndex],
       isLoading: false,
       error: null,
+      updateStatusMessage: null,
       nextSample,
       resetSession,
       retryLoadSession: jest.fn(async () => {}),

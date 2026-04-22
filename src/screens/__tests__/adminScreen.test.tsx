@@ -49,9 +49,10 @@ describe('AdminScreen', () => {
       currentSample: null,
       isLoading: false,
       error: null,
+      updateStatusMessage: null,
       nextSample: jest.fn(),
       retryLoadSession: jest.fn(async () => {}),
-      resetSession: jest.fn(),
+      resetSession: jest.fn(async () => {}),
     });
     mockSaveQuestionnaire.mockResolvedValue('q-1');
     mockGetResultExportOptions.mockResolvedValue({
@@ -68,7 +69,7 @@ describe('AdminScreen', () => {
   });
 
   it('starts export for selected questionnaire without manual DB query', async () => {
-    const { getByLabelText } = render(
+    const { getByLabelText, findByLabelText } = render(
       <AdminScreen
         navigation={{ navigate: jest.fn() } as any}
         route={{ key: 'Admin-1', name: 'Admin' } as any}
@@ -79,6 +80,8 @@ describe('AdminScreen', () => {
       expect(mockGetResultExportOptions).toHaveBeenCalledTimes(1);
     });
 
+    const optionChip = await findByLabelText('Vientikohde: Jogurttitesti');
+    fireEvent.press(optionChip);
     fireEvent.press(getByLabelText('Käynnistä tulosten vienti'));
 
     await waitFor(() => {
