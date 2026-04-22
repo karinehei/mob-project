@@ -8,6 +8,7 @@ jest.mock('../../context/SampleContext', () => ({
     isLoading: false,
     error: null,
     sessionId: 'test-session',
+    responseSessionId: 'resp-1',
     questionnaireTitle: 'Aistinvarainen arviointi',
     questionnaireQuestions: [
       { id: 'q1', label: 'Ulkonäkö', type: 'scale', minScore: 0, maxScore: 10 },
