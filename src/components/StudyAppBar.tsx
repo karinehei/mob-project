@@ -1,5 +1,6 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { useTranslation } from 'react-i18next';
 
 import { colors } from '../theme/colors';
 import { spacing } from '../theme/spacing';
@@ -19,18 +20,20 @@ function MenuIcon(): React.JSX.Element {
  * Tummansininen yläpalkki — sama ulkoasu kaikilla tutkimus-/arviointinäkymillä.
  */
 export function StudyAppBar(): React.JSX.Element {
+  const { t } = useTranslation();
+
   return (
     <View style={styles.appBar}>
       <Pressable
         style={styles.appBarIconHit}
         onPress={() => {}}
         accessibilityRole="button"
-        accessibilityLabel="Valikko"
+        accessibilityLabel={t('appBar.menu_accessibility')}
       >
         <MenuIcon />
       </Pressable>
       <Text style={styles.appBarTitle} numberOfLines={1}>
-        Food_Study
+        {t('appBar.title')}
       </Text>
       <View style={styles.appBarSpacer} />
     </View>

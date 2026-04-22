@@ -7,6 +7,7 @@ import {
   Text,
   View,
 } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import { ScreenContainer } from '../components/ScreenContainer';
@@ -20,9 +21,10 @@ import { typography } from '../theme/typography';
 type Props = NativeStackScreenProps<RootStackParamList, 'Sample'>;
 
 /**
- * Välinäkymä ennen arviointia — sama rakenne ja visuaalinen kieli kuin etusivulla.
+ * Välinäkymä ennen arviointia - sama rakenne ja visuaalinen kieli kuin etusivulla.
  */
 export default function SampleScreen({ navigation }: Props): React.JSX.Element {
+  const { t } = useTranslation();
   const { currentSample, isLoading, error, retryLoadSession } =
     useSampleContext();
 
@@ -32,7 +34,7 @@ export default function SampleScreen({ navigation }: Props): React.JSX.Element {
         <StudyAppBar />
         <View style={styles.centerContainer}>
           <ActivityIndicator size="large" color={colors.primary} />
-          <Text style={styles.infoText}>Ladataan näytettä...</Text>
+          <Text style={styles.infoText}>{t('sample_screen.loading')}</Text>
         </View>
       </ScreenContainer>
     );
@@ -45,17 +47,15 @@ export default function SampleScreen({ navigation }: Props): React.JSX.Element {
         <View style={styles.centerContainer}>
           <Text style={styles.infoText}>{error}</Text>
           <Pressable
-            onPress={async () => {
-              await retryLoadSession();
-            }}
+            onPress={async () => await retryLoadSession()}
             style={({ pressed }) => [
               styles.retryButton,
               pressed && styles.retryButtonPressed,
             ]}
             accessibilityRole="button"
-            accessibilityLabel="Yritä uudelleen"
+            accessibilityLabel={t('common.try_again')}
           >
-            <Text style={styles.retryButtonLabel}>Yritä uudelleen</Text>
+            <Text style={styles.retryButtonLabel}>{t('common.try_again')}</Text>
           </Pressable>
         </View>
       </ScreenContainer>
@@ -67,21 +67,17 @@ export default function SampleScreen({ navigation }: Props): React.JSX.Element {
       <ScreenContainer testID="screen-sample">
         <StudyAppBar />
         <View style={styles.centerContainer}>
-          <Text style={styles.infoText}>
-            Ei aktiivista näytettä arvioitavana.
-          </Text>
+          <Text style={styles.infoText}>{t('sample_screen.no_active')}</Text>
           <Pressable
-            onPress={async () => {
-              await retryLoadSession();
-            }}
+            onPress={async () => await retryLoadSession()}
             style={({ pressed }) => [
               styles.retryButton,
               pressed && styles.retryButtonPressed,
             ]}
             accessibilityRole="button"
-            accessibilityLabel="Päivitä näkymä"
+            accessibilityLabel={t('sample_screen.refresh_view')}
           >
-            <Text style={styles.retryButtonLabel}>Päivitä</Text>
+            <Text style={styles.retryButtonLabel}>{t('common.refresh')}</Text>
           </Pressable>
         </View>
       </ScreenContainer>
@@ -99,23 +95,24 @@ export default function SampleScreen({ navigation }: Props): React.JSX.Element {
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
-          <Text style={styles.pageTitle}>Näyte</Text>
+          <Text style={styles.pageTitle}>{t('sample_screen.title')}</Text>
 
           <View style={styles.sampleCard}>
-            <Text style={styles.sampleLabel}>Nykyinen näytekoodi:</Text>
+            <Text style={styles.sampleLabel}>
+              {t('sample_screen.current_code')}
+            </Text>
             <Text style={styles.sampleCode}>{currentSample}</Text>
           </View>
 
           <Text style={styles.instruction}>
-            Jatka seuraavaan näkymään aloittaaksesi tämän näytteen arvioinnin.
+            {t('sample_screen.instruction')}
           </Text>
 
           <View style={styles.infoCard}>
-            <Text style={styles.infoTitle}>Seuraavaksi</Text>
-            <Text style={styles.infoBody}>
-              Arviointinäkymässä voit tallentaa sensoriset pisteesi. Voit palata
-              takaisin valikkoon milloin tahansa.
+            <Text style={styles.infoTitle}>
+              {t('sample_screen.next_title')}
             </Text>
+            <Text style={styles.infoBody}>{t('sample_screen.next_body')}</Text>
           </View>
         </ScrollView>
 
@@ -124,9 +121,9 @@ export default function SampleScreen({ navigation }: Props): React.JSX.Element {
             style={({ pressed }) => [styles.cta, pressed && styles.ctaPressed]}
             onPress={() => navigation.navigate('Evaluation')}
             accessibilityRole="button"
-            accessibilityLabel="Siirry arviointiin"
+            accessibilityLabel={t('sample_screen.go_to_eval')}
           >
-            <Text style={styles.ctaLabel}>Siirry arviointiin</Text>
+            <Text style={styles.ctaLabel}>{t('sample_screen.go_to_eval')}</Text>
           </Pressable>
         </View>
       </View>

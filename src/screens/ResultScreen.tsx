@@ -1,6 +1,7 @@
 import React from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { useTranslation } from 'react-i18next';
 
 import { ScreenContainer } from '../components/ScreenContainer';
 import { StudyAppBar } from '../components/StudyAppBar';
@@ -16,14 +17,15 @@ export default function ResultScreen({
   navigation,
   route,
 }: Props): React.JSX.Element {
+  const { t } = useTranslation();
   const { nextSample, resetSession } = useSampleContext();
 
   const saveSucceeded = route.params?.saveSucceeded === true;
   const flowCompleted = route.params?.flowCompleted === true;
 
   const primaryCtaLabel = flowCompleted
-    ? 'Aloita uusi kierros'
-    : 'Arvioi seuraava näyte';
+    ? t('result_screen.new_round')
+    : t('result_screen.next_sample');
 
   const handleNextStep = () => {
     if (flowCompleted) {
@@ -48,24 +50,24 @@ export default function ResultScreen({
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
-          <Text style={styles.pageTitle}>Tulos</Text>
+          <Text style={styles.pageTitle}>{t('result_screen.title')}</Text>
 
-          <Text style={styles.lead}>Tulosnäyttö</Text>
+          <Text style={styles.lead}>{t('result_screen.lead')}</Text>
 
           <View style={styles.infoCard}>
             <Text style={styles.infoTitle}>
               {flowCompleted
-                ? 'Kaikki arvioitu'
+                ? t('result_screen.all_done_title')
                 : saveSucceeded
-                  ? 'Tallennettu'
-                  : 'Tulos'}
+                  ? t('result_screen.saved_title')
+                  : t('result_screen.title')}
             </Text>
             <Text style={styles.infoBody}>
               {flowCompleted
-                ? 'Viimeinenkin näyte arvioitiin onnistuneesti. Kiitos osallistumisesta!'
+                ? t('result_screen.all_done_body')
                 : saveSucceeded
-                  ? 'Arvio tallennettu Firestoreen. Siirry seuraavaan näytteeseen.'
-                  : 'Voit palata etusivulle aloittaaksesi uuden kierroksen.'}
+                  ? t('result_screen.saved_body')
+                  : t('result_screen.default_body')}
             </Text>
           </View>
         </ScrollView>
