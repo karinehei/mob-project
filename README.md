@@ -187,16 +187,20 @@ Kun muutat `.env`-tiedostoa, käynnistä Metro uudelleen (tarvittaessa `npm star
 
 ### Hallintanäkymä (`Admin`)
 
-Hallintanäkymä löytyy etusivulta painikkeesta **Hallinnoi kyselyä**. Sieltä on kaksi tapaa julkaista uusi aktiivinen kysely ilman suoraa Firestore-manipulaatiota:
+Hallintanäkymä löytyy etusivulta painikkeesta **Hallinnoi kyselyä**. Sieltä voi:
 
-1. **Käsin luonti**
+1. **Luoda kyselyn käsin**
    - anna kyselyn nimi
    - lisää näytekoodit (`451, 926, 780` tai yksi per rivi)
    - lisää asteikkokysymykset (0-10, yksi per rivi)
    - halutessa lisää yksi CATA-kysymys ja sen vaihtoehdot
-2. **JSON-tuonti**
+2. **Tuoda kyselyn JSON:sta**
    - liitä JSON, jossa on kentät `title`, `samples` ja `questions`
    - kysymystyypit: `scale` ja `multiSelect`
+3. **Viedä tulokset ilman manuaalista tietokantahakua**
+   - valitse vientikohde: kysely tai tutkimussessio
+   - valitse tiedostomuoto: CSV tai XLS (Excel-yhteensopiva)
+   - käynnistä vienti painikkeesta **Lataa tulokset**
 
 Esimerkkimuotoinen JSON:
 
@@ -310,7 +314,7 @@ Epäonnistunut vaihe (mukaan lukien Android-build) **estää merge-ehdon**, jos 
 
 - Navigaatio: Stack/Tab; kytke `StudyScreen` ja `ROUTES` käyttöön `RootNavigator`-tasolla.
 - Firestore: tiukenna security rules ja auth; lisää kyselyille versiointi / audit trail tarvittaessa.
-- Lisää `responseSessions`-dokumentille vienti (CSV/XLS) ja raportointinäkymä.
+- Lisää vientiin suodattimet (esim. aikaväli, tuoteryhmä) ja raportointinäkymä.
 - Laajenna hallintanäkymää useampiin kysymystyyppeihin ja muokkaustukeen.
 - CI: iOS-build tai release-allekirjoitus, jos natiivia halutaan laajentaa.
 
