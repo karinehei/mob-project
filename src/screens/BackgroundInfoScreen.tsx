@@ -14,7 +14,7 @@ import { ScreenContainer } from '../components/ScreenContainer';
 import { StudyAppBar } from '../components/StudyAppBar';
 import { useSampleContext } from '../context/SampleContext';
 import { RootStackParamList } from '../navigation/AppNavigator';
-import { saveRespondentProfile } from '../services/respondentProfileService';
+import { saveResponseSession } from '../services/responseSessionService';
 import { colors } from '../theme/colors';
 import { spacing } from '../theme/spacing';
 import { typography } from '../theme/typography';
@@ -53,7 +53,7 @@ export default function BackgroundInfoScreen({
     setSaveError(null);
     setSaving(true);
     try {
-      await saveRespondentProfile({
+      await saveResponseSession({
         sessionId,
         responseSessionId,
         questionnaireTitle,
