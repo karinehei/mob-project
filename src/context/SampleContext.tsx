@@ -7,9 +7,12 @@ import React, {
   useCallback,
 } from 'react';
 import { fetchActiveStudySession } from '../services/studyService';
+import type { QuestionnaireQuestion } from '../types/questionnaire';
 
 interface SampleContextType {
   sessionId: string | null;
+  questionnaireTitle: string;
+  questionnaireQuestions: QuestionnaireQuestion[];
   samples: string[];
   currentIndex: number;
   currentSample: string | null;
@@ -42,6 +45,12 @@ interface ProviderProps {
 
 export const SampleProvider: React.FC<ProviderProps> = ({ children }) => {
   const [sessionId, setSessionId] = useState<string | null>(null);
+  const [questionnaireTitle, setQuestionnaireTitle] = useState<string>(
+    'Aistinvarainen arviointi',
+  );
+  const [questionnaireQuestions, setQuestionnaireQuestions] = useState<
+    QuestionnaireQuestion[]
+  >([]);
   const [samples, setSamples] = useState<string[]>([]);
   const [currentIndex, setCurrentIndex] = useState<number>(0);
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -58,16 +67,22 @@ export const SampleProvider: React.FC<ProviderProps> = ({ children }) => {
 
       if (session && session.samples.length > 0) {
         setSessionId(session.id);
+        setQuestionnaireTitle(session.title);
+        setQuestionnaireQuestions(session.questions);
         setSamples(session.samples);
         setCurrentIndex(0);
       } else {
         setSessionId(null);
+        setQuestionnaireTitle('Aistinvarainen arviointi');
+        setQuestionnaireQuestions([]);
         setSamples([]);
         setCurrentIndex(0);
         setError('Aktiivista tutkimusistuntoa ei löytynyt.');
       }
     } catch (err) {
       setSessionId(null);
+      setQuestionnaireTitle('Aistinvarainen arviointi');
+      setQuestionnaireQuestions([]);
       setSamples([]);
       setCurrentIndex(0);
       setError(
@@ -104,6 +119,8 @@ export const SampleProvider: React.FC<ProviderProps> = ({ children }) => {
     <SampleContext.Provider
       value={{
         sessionId,
+        questionnaireTitle,
+        questionnaireQuestions,
         samples,
         currentIndex,
         currentSample,
