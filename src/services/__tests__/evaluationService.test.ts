@@ -21,33 +21,42 @@ describe('saveEvaluation', () => {
     mockAddDoc.mockResolvedValue(undefined);
   });
 
-  it('writes document with sampleCode, rating, sessionId and createdAt', async () => {
+  it('writes document with answers, ratingSummary, sessionId and createdAt', async () => {
     await saveEvaluation({
       sampleCode: ' 451 ',
-      rating: 8,
       sessionId: 'sess-1',
+      questionnaireTitle: 'Jogurttitesti',
+      answers: {
+        appearance: 8,
+        attributes: ['makea', 'hapan'],
+      },
     });
 
     expect(mockAddDoc).toHaveBeenCalledTimes(1);
     const [, data] = mockAddDoc.mock.calls[0];
     expect(data).toMatchObject({
       sampleCode: '451',
-      rating: 8,
+      answers: {
+        appearance: 8,
+        attributes: ['makea', 'hapan'],
+      },
+      ratingSummary: 8,
       sessionId: 'sess-1',
+      questionnaireTitle: 'Jogurttitesti',
       createdAt: { __serverTimestamp: true },
     });
   });
 
   it('rejects empty sample code', async () => {
     await expect(
-      saveEvaluation({ sampleCode: '   ', rating: 5, sessionId: null }),
+      saveEvaluation({ sampleCode: '   ', sessionId: null, answers: { a: 5 } }),
     ).rejects.toThrow('Näytekoodi');
   });
 
-  it('rejects rating out of range', async () => {
+  it('rejects missing answers', async () => {
     await expect(
-      saveEvaluation({ sampleCode: '1', rating: 11, sessionId: null }),
-    ).rejects.toThrow('0–10');
+      saveEvaluation({ sampleCode: '1', sessionId: null, answers: {} }),
+    ).rejects.toThrow('Vastaukset');
   });
 });
 

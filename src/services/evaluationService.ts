@@ -8,11 +8,13 @@ import {
 
 import { FIRESTORE_COLLECTIONS } from '../constants/firestore';
 import { getFirestoreDb } from '../firebase/firestore';
+import type { EvaluationAnswer } from '../types/evaluation';
 
 export type SaveEvaluationInput = {
   sampleCode: string;
-  rating: number;
   sessionId: string | null;
+  answers: Record<string, EvaluationAnswer>;
+  questionnaireTitle?: string | null;
 };
 
 export interface SampleRecord {
@@ -22,7 +24,7 @@ export interface SampleRecord {
 
 /**
  * Tallentaa yhden arvioinnin kokoelmaan `evaluations`.
- * Kentät: sampleCode, rating (0–10), sessionId, createdAt (palvelimen aika).
+ * Kentät: sampleCode, answers, ratingSummary, sessionId, questionnaireTitle, createdAt.
  */
 export async function saveEvaluation(
   input: SaveEvaluationInput,
@@ -31,16 +33,31 @@ export async function saveEvaluation(
   if (!code) {
     throw new Error('Näytekoodi puuttuu.');
   }
-  if (!Number.isFinite(input.rating) || input.rating < 0 || input.rating > 10) {
-    throw new Error('Pistemäärän tulee olla välillä 0–10.');
+  const answerKeys = Object.keys(input.answers ?? {});
+  if (answerKeys.length === 0) {
+    throw new Error('Vastaukset puuttuvat.');
   }
 
   try {
     const db = getFirestoreDb();
+    const numericAnswers = Object.values(input.answers).filter(
+      (value): value is number => typeof value === 'number' && Number.isFinite(value),
+    );
+    const ratingSummary =
+      numericAnswers.length > 0
+        ? Math.round(
+            numericAnswers.reduce((sum, value) => sum + value, 0) /
+              numericAnswers.length,
+          )
+        : null;
+
     await addDoc(collection(db, FIRESTORE_COLLECTIONS.evaluations), {
       sampleCode: code,
-      rating: input.rating,
+      answers: input.answers,
+      rating: ratingSummary,
+      ratingSummary,
       sessionId: input.sessionId,
+      questionnaireTitle: input.questionnaireTitle ?? null,
       createdAt: serverTimestamp(),
     });
   } catch (error) {

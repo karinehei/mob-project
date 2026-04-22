@@ -1,6 +1,7 @@
 export type { EntityId } from './models';
 export type {
   Evaluation,
+  EvaluationAnswer,
   EvaluationCriterion,
   EvaluationPayload,
 } from './evaluation';

@@ -132,8 +132,10 @@ function assertSeedAllowed(
   );
 }
 
-function averageScore(scores: Record<string, number>): number {
-  const vals = Object.values(scores);
+function averageScore(answers: Record<string, unknown>): number {
+  const vals = Object.values(answers).filter(
+    (value): value is number => typeof value === 'number' && Number.isFinite(value),
+  );
   if (vals.length === 0) {
     return 0;
   }
@@ -191,7 +193,8 @@ async function main(): Promise<void> {
 
   const evalA = {
     sampleCode: codeForSampleId(mockEvaluationExample.sampleId),
-    rating: averageScore(mockEvaluationExample.scores),
+    answers: mockEvaluationExample.answers,
+    rating: averageScore(mockEvaluationExample.answers),
     sessionId: SEED_SESSION_DOC_ID,
     createdAt: Timestamp.fromDate(new Date(mockEvaluationExample.timestamp)),
     seedTag: 'mob-project-seed',
@@ -199,7 +202,8 @@ async function main(): Promise<void> {
 
   const evalB = {
     sampleCode: codeForSampleId(mockEvaluationPayloadExample.sampleId),
-    rating: averageScore(mockEvaluationPayloadExample.scores),
+    answers: mockEvaluationPayloadExample.answers,
+    rating: averageScore(mockEvaluationPayloadExample.answers),
     sessionId: SEED_SESSION_DOC_ID,
     createdAt: Timestamp.now(),
     seedTag: 'mob-project-seed',

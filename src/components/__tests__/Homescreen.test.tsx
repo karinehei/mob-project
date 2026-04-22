@@ -16,9 +16,6 @@ jest.mock('../../context/SampleContext', () => ({
     currentIndex: 0,
     nextSample: jest.fn(),
     retryLoadSession: jest.fn(async () => {}),
-    pendingAppearanceRating: null,
-    setPendingAppearanceRating: jest.fn(),
-    clearPendingAppearanceRating: jest.fn(),
     resetSession: jest.fn(),
   }),
 }));

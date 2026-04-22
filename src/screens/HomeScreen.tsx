@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import {
   ActivityIndicator,
   Pressable,
@@ -20,54 +20,12 @@ import { RootStackParamList } from '../navigation/AppNavigator';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Home' | 'Study'>;
 
-const RATING_ROW_A = [0, 1, 2, 3, 4, 5] as const;
-const RATING_ROW_B = [6, 7, 8, 9, 10] as const;
-
-type RatingChipProps = {
-  value: number;
-  selected: boolean;
-  onPress: () => void;
-};
-
-function RatingChip({
-  value,
-  selected,
-  onPress,
-}: RatingChipProps): React.JSX.Element {
-  return (
-    <Pressable
-      onPress={onPress}
-      style={({ pressed }) => [
-        styles.ratingChip,
-        selected && styles.ratingChipSelected,
-        pressed && !selected && styles.ratingChipPressed,
-      ]}
-      accessibilityRole="button"
-      accessibilityState={{ selected }}
-      accessibilityLabel={`Arvo ${value}`}
-    >
-      <Text
-        style={[
-          styles.ratingChipText,
-          selected && styles.ratingChipTextSelected,
-        ]}
-      >
-        {value}
-      </Text>
-    </Pressable>
-  );
-}
-
 export default function HomeScreen({ navigation }: Props): React.JSX.Element {
-  const [selectedRating, setSelectedRating] = useState<number>(8);
-
-  // real data
   const {
     currentSample,
     isLoading,
     error,
     retryLoadSession,
-    setPendingAppearanceRating,
     questionnaireTitle,
     questionnaireQuestions,
     samples,
@@ -211,37 +169,21 @@ export default function HomeScreen({ navigation }: Props): React.JSX.Element {
           </View>
 
           <Text style={styles.instruction}>
-            Arvioi näytteen miellyttävyyttä.
+            Kysymykset haetaan aktiivisen kyselyn skeemasta. Arviointinakyma
+            mukautuu automaattisesti kysymystyyppeihin.
           </Text>
 
           <View style={styles.ratingCard}>
-            <Text style={styles.ratingCardTitle}>Ulkonäkö</Text>
-            <Text style={styles.scaleLegend}>
-              0 = Erittäin epämiellyttävä{'\n'}
-              10 = Erittäin miellyttävä
-            </Text>
-
-            <View style={styles.chipBlock}>
-              <View style={styles.chipRow}>
-                {RATING_ROW_A.map((n) => (
-                  <RatingChip
-                    key={n}
-                    value={n}
-                    selected={selectedRating === n}
-                    onPress={() => setSelectedRating(n)}
-                  />
-                ))}
-              </View>
-              <View style={[styles.chipRow, styles.chipRowSecond]}>
-                {RATING_ROW_B.map((n) => (
-                  <RatingChip
-                    key={n}
-                    value={n}
-                    selected={selectedRating === n}
-                    onPress={() => setSelectedRating(n)}
-                  />
-                ))}
-              </View>
+            <Text style={styles.ratingCardTitle}>Kysymystyypit</Text>
+            <View style={styles.questionList}>
+              {questionnaireQuestions.map((question) => (
+                <View key={question.id} style={styles.questionTypeRow}>
+                  <Text style={styles.questionListItem}>{question.label}</Text>
+                  <Text style={styles.questionTypeTag}>
+                    {question.type === 'scale' ? 'Asteikko' : 'Monivalinta / CATA'}
+                  </Text>
+                </View>
+              ))}
             </View>
           </View>
         </ScrollView>
@@ -249,22 +191,17 @@ export default function HomeScreen({ navigation }: Props): React.JSX.Element {
         <View style={styles.footer}>
           <Pressable
             style={({ pressed }) => [styles.cta, pressed && styles.ctaPressed]}
-            onPress={() => {
-              setPendingAppearanceRating(selectedRating);
-              navigation.navigate('Sample');
-            }}
+            onPress={() => navigation.navigate('Sample')}
             accessibilityRole="button"
-            accessibilityLabel="Seuraava näkymä"
+            accessibilityLabel="Aloita arviointi"
           >
-            <Text style={styles.ctaLabel}>Seuraava</Text>
+            <Text style={styles.ctaLabel}>Aloita arviointi</Text>
           </Pressable>
         </View>
       </View>
     </ScreenContainer>
   );
 }
-
-const CHIP_SIZE = 44;
 
 const styles = StyleSheet.create({
   root: {
@@ -367,41 +304,15 @@ const styles = StyleSheet.create({
     color: colors.textMuted,
     lineHeight: 18,
   },
-  chipBlock: {
-    marginTop: spacing.lg,
-    gap: spacing.sm,
+  questionTypeRow: {
+    paddingVertical: spacing.sm,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: colors.border,
   },
-  chipRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    gap: spacing.xs,
-  },
-  chipRowSecond: {
-    paddingHorizontal: CHIP_SIZE / 2 + spacing.xs / 2,
-  },
-  ratingChip: {
-    width: CHIP_SIZE,
-    height: CHIP_SIZE,
-    borderRadius: CHIP_SIZE / 2,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: colors.surfaceMuted,
-  },
-  ratingChipSelected: {
-    backgroundColor: colors.ratingSelectedBg,
-    borderWidth: 2,
-    borderColor: colors.ratingSelectedBorder,
-  },
-  ratingChipPressed: {
-    opacity: 0.92,
-  },
-  ratingChipText: {
-    ...typography.body,
-    fontWeight: '600',
-    color: colors.textPrimary,
-  },
-  ratingChipTextSelected: {
-    color: colors.sampleAccent,
+  questionTypeTag: {
+    marginTop: spacing.xs,
+    ...typography.caption,
+    color: colors.textMuted,
   },
   footer: {
     paddingHorizontal: spacing.lg,

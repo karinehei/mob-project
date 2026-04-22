@@ -1,6 +1,7 @@
 import type { EntityId } from './models';
 
 export type { EntityId };
+export type EvaluationAnswer = number | string[];
 
 export interface EvaluationCriterion {
   id: EntityId;
@@ -17,7 +18,7 @@ export interface Evaluation {
   sampleId: EntityId;
   timestamp: string;
   /** Avain = EvaluationCriterion.id */
-  scores: Record<EntityId, number>;
+  answers: Record<EntityId, EvaluationAnswer>;
 }
 
 /**
@@ -26,5 +27,5 @@ export interface Evaluation {
  */
 export interface EvaluationPayload {
   sampleId: EntityId;
-  scores: Record<EntityId, number>;
+  answers: Record<EntityId, EvaluationAnswer>;
 }

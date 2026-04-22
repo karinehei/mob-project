@@ -1,11 +1,11 @@
-import { EvaluationPayload, EntityId } from '../types/evaluation';
+import { EvaluationAnswer, EvaluationPayload, EntityId } from '../types/evaluation';
 
 export const buildEvaluationPayload = (
   sampleId: EntityId,
-  scores: Record<EntityId, number>
+  answers: Record<EntityId, EvaluationAnswer>
 ): EvaluationPayload => {
   return {
     sampleId,
-    scores,
+    answers,
   };
 };
