@@ -15,6 +15,7 @@ jest.mock('firebase/firestore', () => ({
   getDoc: jest.fn(),
   getDocs: jest.fn(),
   limit: jest.fn(),
+  orderBy: jest.fn(),
   query: jest.fn(),
   where: jest.fn(),
 }));
@@ -277,6 +278,42 @@ describe('studyService', () => {
       const result = await fetchActiveStudySession();
 
       expect(result).toBeNull();
+    });
+
+    it('fallbackaa ilman orderBy-indeksiä aktiiviseen kyselyyn', async () => {
+      (getDocs as jest.Mock)
+        .mockRejectedValueOnce(new Error('FAILED_PRECONDITION: The query requires an index.'))
+        .mockResolvedValueOnce({
+          empty: false,
+          docs: [
+            {
+              id: 'questionnaire-old',
+              data: () => ({
+                title: 'Vanha kysely',
+                samples: ['111'],
+                questions: [{ id: 'appearance', label: 'Ulkonäkö', type: 'scale' }],
+                isActive: true,
+                updatedAt: { seconds: 100 },
+              }),
+            },
+            {
+              id: 'questionnaire-new',
+              data: () => ({
+                title: 'Uusi kysely',
+                samples: ['222'],
+                questions: [{ id: 'appearance', label: 'Ulkonäkö', type: 'scale' }],
+                isActive: true,
+                updatedAt: { seconds: 200 },
+              }),
+            },
+          ],
+        });
+
+      const result = await fetchActiveStudySession();
+
+      expect(result?.id).toBe('questionnaire-new');
+      expect(result?.title).toBe('Uusi kysely');
+      expect(result?.samples).toEqual(['222']);
     });
 
     it('heitää virheen jos Firestore epäonnistuu', async () => {
