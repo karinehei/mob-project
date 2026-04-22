@@ -69,7 +69,7 @@ describe('AdminScreen', () => {
   });
 
   it('starts export for selected questionnaire without manual DB query', async () => {
-    const { getByLabelText } = render(
+    const { getByLabelText, findByLabelText } = render(
       <AdminScreen
         navigation={{ navigate: jest.fn() } as any}
         route={{ key: 'Admin-1', name: 'Admin' } as any}
@@ -80,6 +80,8 @@ describe('AdminScreen', () => {
       expect(mockGetResultExportOptions).toHaveBeenCalledTimes(1);
     });
 
+    const optionChip = await findByLabelText('Vientikohde: Jogurttitesti');
+    fireEvent.press(optionChip);
     fireEvent.press(getByLabelText('Käynnistä tulosten vienti'));
 
     await waitFor(() => {
