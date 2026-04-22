@@ -34,6 +34,16 @@ function buildContext(state: SampleState) {
 
   const makeValue = () => ({
     sessionId: 'sess-1',
+    questionnaireTitle: 'Aistinvarainen arviointi',
+    questionnaireQuestions: [
+      {
+        id: 'q1',
+        label: 'Ulkonäkö',
+        type: 'scale' as const,
+        minScore: 0,
+        maxScore: 10,
+      },
+    ],
     samples: state.samples,
     currentIndex: state.currentIndex,
     currentSample:
