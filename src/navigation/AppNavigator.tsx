@@ -8,12 +8,14 @@ import SampleScreen from '../screens/SampleScreen';
 import EvaluationScreen from '../screens/EvaluationScreen';
 import ResultScreen from '../screens/ResultScreen';
 import AdminScreen from '../screens/AdminScreen';
+import BackgroundInfoScreen from '../screens/BackgroundInfoScreen';
 
 export type RootStackParamList = {
   Home: undefined;
   Study: undefined;
   Sample: undefined;
   Evaluation: undefined;
+  BackgroundInfo: undefined;
   Admin: undefined;
   Result:
     | {
@@ -48,6 +50,11 @@ export function AppNavigator(): React.JSX.Element {
           name="Evaluation"
           component={EvaluationScreen}
           options={{ title: 'Arviointi' }}
+        />
+        <Stack.Screen
+          name="BackgroundInfo"
+          component={BackgroundInfoScreen}
+          options={{ title: 'Taustatiedot' }}
         />
         <Stack.Screen
           name="Admin"

@@ -148,6 +148,7 @@ export default function EvaluationScreen({
     currentIndex,
     samples,
     sessionId,
+    responseSessionId,
     questionnaireTitle,
     questionnaireQuestions,
     isLoading,
@@ -269,16 +270,21 @@ export default function EvaluationScreen({
       await saveEvaluation({
         sampleCode: currentSample,
         sessionId,
+        responseSessionId,
         questionnaireTitle,
         answers: payload.answers,
       });
 
       const isLastSample = currentIndex >= samples.length - 1;
 
-      navigation.navigate('Result', {
-        saveSucceeded: true,
-        flowCompleted: isLastSample,
-      });
+      if (isLastSample) {
+        navigation.navigate('BackgroundInfo');
+      } else {
+        navigation.navigate('Result', {
+          saveSucceeded: true,
+          flowCompleted: false,
+        });
+      }
     } catch (e) {
       setSaveError(saveErrorMessage(e));
     } finally {

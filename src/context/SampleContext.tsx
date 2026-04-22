@@ -9,8 +9,13 @@ import React, {
 import { fetchActiveStudySession } from '../services/studyService';
 import type { QuestionnaireQuestion } from '../types/questionnaire';
 
+function createResponseSessionId(): string {
+  return `resp-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+}
+
 interface SampleContextType {
   sessionId: string | null;
+  responseSessionId: string;
   questionnaireTitle: string;
   questionnaireQuestions: QuestionnaireQuestion[];
   samples: string[];
@@ -41,6 +46,9 @@ interface ProviderProps {
 
 export const SampleProvider: React.FC<ProviderProps> = ({ children }) => {
   const [sessionId, setSessionId] = useState<string | null>(null);
+  const [responseSessionId, setResponseSessionId] = useState<string>(
+    createResponseSessionId(),
+  );
   const [questionnaireTitle, setQuestionnaireTitle] = useState<string>(
     'Aistinvarainen arviointi',
   );
@@ -60,6 +68,7 @@ export const SampleProvider: React.FC<ProviderProps> = ({ children }) => {
 
       if (session && session.samples.length > 0) {
         setSessionId(session.id);
+        setResponseSessionId(createResponseSessionId());
         setQuestionnaireTitle(session.title);
         setQuestionnaireQuestions(session.questions);
         setSamples(session.samples);
@@ -74,6 +83,7 @@ export const SampleProvider: React.FC<ProviderProps> = ({ children }) => {
       }
     } catch (err) {
       setSessionId(null);
+      setResponseSessionId(createResponseSessionId());
       setQuestionnaireTitle('Aistinvarainen arviointi');
       setQuestionnaireQuestions([]);
       setSamples([]);
@@ -101,12 +111,14 @@ export const SampleProvider: React.FC<ProviderProps> = ({ children }) => {
 
   const resetSession = () => {
     setCurrentIndex(0);
+    setResponseSessionId(createResponseSessionId());
   };
 
   return (
     <SampleContext.Provider
       value={{
         sessionId,
+        responseSessionId,
         questionnaireTitle,
         questionnaireQuestions,
         samples,
