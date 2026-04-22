@@ -1,34 +1,46 @@
+import {
+  addDoc,
+  collection,
+  getDocs,
+  query,
+  serverTimestamp,
+  updateDoc,
+  where,
+} from 'firebase/firestore';
 import { saveQuestionnaire } from '../questionnaireService';
-
-const mockAddDoc = jest.fn();
-const mockGetDocs = jest.fn();
-const mockUpdateDoc = jest.fn();
-const mockQuery = jest.fn();
-const mockCollection = jest.fn((db, name) => ({ _db: db, _name: name }));
-const mockServerTimestamp = jest.fn(() => ({ __serverTimestamp: true }));
-const mockWhere = jest.fn(() => ({ _where: true }));
 
 jest.mock('../../firebase/firestore', () => ({
   getFirestoreDb: jest.fn(() => ({})),
 }));
 
 jest.mock('firebase/firestore', () => ({
-  addDoc: mockAddDoc,
-  collection: mockCollection,
-  getDocs: mockGetDocs,
-  query: mockQuery,
-  serverTimestamp: mockServerTimestamp,
-  updateDoc: mockUpdateDoc,
-  where: mockWhere,
+  addDoc: jest.fn(),
+  collection: jest.fn((db, name) => ({ _db: db, _name: name })),
+  getDocs: jest.fn(),
+  query: jest.fn(),
+  serverTimestamp: jest.fn(() => ({ __serverTimestamp: true })),
+  updateDoc: jest.fn(),
+  where: jest.fn(() => ({ _where: true })),
 }));
 
 describe('questionnaireService', () => {
+  const mockAddDoc = addDoc as unknown as jest.Mock;
+  const mockCollection = collection as unknown as jest.Mock;
+  const mockGetDocs = getDocs as unknown as jest.Mock;
+  const mockQuery = query as unknown as jest.Mock;
+  const mockServerTimestamp = serverTimestamp as unknown as jest.Mock;
+  const mockUpdateDoc = updateDoc as unknown as jest.Mock;
+  const mockWhere = where as unknown as jest.Mock;
+
   beforeEach(() => {
     jest.clearAllMocks();
     mockAddDoc.mockResolvedValue({ id: 'questionnaire-1' });
     mockGetDocs.mockResolvedValue({ docs: [] });
     mockUpdateDoc.mockResolvedValue(undefined);
     mockQuery.mockImplementation((...parts: unknown[]) => ({ parts }));
+    mockCollection.mockImplementation((db, name) => ({ _db: db, _name: name }));
+    mockWhere.mockReturnValue({ _where: true });
+    mockServerTimestamp.mockReturnValue({ __serverTimestamp: true });
   });
 
   it('deactivates previous active questionnaires and stores new active questionnaire', async () => {
