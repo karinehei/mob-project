@@ -16,7 +16,7 @@ describe('questionnaireBuilder', () => {
       const result = buildQuestionnaireDraftFromManualInput({
         title: 'Jogurttitesti',
         samplesText: '451, 926',
-        scaleQuestionsText: 'Ulkonäkö\nMaku',
+        scaleQuestionsText: 'Ulkonäkö\nTuoksu\nMaku\nRakenne',
         cataQuestionLabel: 'Mitkä ominaisuudet tunnistit?',
         cataOptionsText: 'makea, hapan',
       });
@@ -33,7 +33,21 @@ describe('questionnaireBuilder', () => {
         },
         {
           id: 'scale-2',
+          label: 'Tuoksu',
+          type: 'scale',
+          minScore: 0,
+          maxScore: 10,
+        },
+        {
+          id: 'scale-3',
           label: 'Maku',
+          type: 'scale',
+          minScore: 0,
+          maxScore: 10,
+        },
+        {
+          id: 'scale-4',
+          label: 'Rakenne',
           type: 'scale',
           minScore: 0,
           maxScore: 10,
@@ -52,11 +66,23 @@ describe('questionnaireBuilder', () => {
         buildQuestionnaireDraftFromManualInput({
           title: 'Jogurttitesti',
           samplesText: '',
-          scaleQuestionsText: 'Ulkonäkö',
+          scaleQuestionsText: 'Ulkonäkö\nTuoksu\nMaku\nRakenne',
           cataQuestionLabel: '',
           cataOptionsText: '',
         }),
       ).toThrow('näytekoodi');
+    });
+
+    it('rejects too few scale questions', () => {
+      expect(() =>
+        buildQuestionnaireDraftFromManualInput({
+          title: 'Jogurttitesti',
+          samplesText: '451, 926',
+          scaleQuestionsText: 'Ulkonäkö\nMaku',
+          cataQuestionLabel: '',
+          cataOptionsText: '',
+        }),
+      ).toThrow('vähintään neljä');
     });
   });
 
@@ -66,7 +92,10 @@ describe('questionnaireBuilder', () => {
         "title": "Tuotu kysely",
         "samples": ["111", "222"],
         "questions": [
+          { "label": "Ulkonäkö", "type": "scale", "minScore": 0, "maxScore": 10 },
           { "label": "Tuoksu", "type": "scale", "minScore": 0, "maxScore": 10 },
+          { "label": "Maku", "type": "scale", "minScore": 0, "maxScore": 10 },
+          { "label": "Rakenne", "type": "scale", "minScore": 0, "maxScore": 10 },
           { "label": "Havaitut ominaisuudet", "type": "multiSelect", "options": ["pehmeä", "raikas"] }
         ]
       }`);
@@ -77,13 +106,34 @@ describe('questionnaireBuilder', () => {
         questions: [
           {
             id: 'scale-1',
+            label: 'Ulkonäkö',
+            type: 'scale',
+            minScore: 0,
+            maxScore: 10,
+          },
+          {
+            id: 'scale-2',
             label: 'Tuoksu',
             type: 'scale',
             minScore: 0,
             maxScore: 10,
           },
           {
-            id: 'multi-select-2',
+            id: 'scale-3',
+            label: 'Maku',
+            type: 'scale',
+            minScore: 0,
+            maxScore: 10,
+          },
+          {
+            id: 'scale-4',
+            label: 'Rakenne',
+            type: 'scale',
+            minScore: 0,
+            maxScore: 10,
+          },
+          {
+            id: 'multi-select-5',
             label: 'Havaitut ominaisuudet',
             type: 'multiSelect',
             options: ['pehmeä', 'raikas'],
@@ -95,6 +145,20 @@ describe('questionnaireBuilder', () => {
 
     it('rejects invalid json', () => {
       expect(() => parseQuestionnaireImport('{bad json')).toThrow('JSON');
+    });
+
+    it('rejects import with fewer than four scale questions', () => {
+      expect(() =>
+        parseQuestionnaireImport(`{
+          "title": "Tuotu kysely",
+          "samples": ["111", "222"],
+          "questions": [
+            { "label": "Ulkonäkö", "type": "scale", "minScore": 0, "maxScore": 10 },
+            { "label": "Maku", "type": "scale", "minScore": 0, "maxScore": 10 },
+            { "label": "Havaitut ominaisuudet", "type": "multiSelect", "options": ["pehmeä", "raikas"] }
+          ]
+        }`),
+      ).toThrow('vähintään neljä');
     });
   });
 });

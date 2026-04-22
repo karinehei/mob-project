@@ -39,6 +39,27 @@ function buildContext(state: SampleState) {
         minScore: 0,
         maxScore: 10,
       },
+      {
+        id: 'smell',
+        label: 'Tuoksu',
+        type: 'scale' as const,
+        minScore: 0,
+        maxScore: 10,
+      },
+      {
+        id: 'taste',
+        label: 'Maku',
+        type: 'scale' as const,
+        minScore: 0,
+        maxScore: 10,
+      },
+      {
+        id: 'texture',
+        label: 'Rakenne',
+        type: 'scale' as const,
+        minScore: 0,
+        maxScore: 10,
+      },
     ],
     samples: state.samples,
     currentIndex: state.currentIndex,
@@ -87,6 +108,9 @@ describe('evaluation flow regressions', () => {
     );
 
     fireEvent.press(getByLabelText('Ulkonäkö: arvo 8'));
+    fireEvent.press(getByLabelText('Tuoksu: arvo 7'));
+    fireEvent.press(getByLabelText('Maku: arvo 9'));
+    fireEvent.press(getByLabelText('Rakenne: arvo 6'));
     fireEvent.press(getByLabelText('Tallenna arvio'));
 
     await waitFor(() => expect(mockSaveEvaluation).toHaveBeenCalledTimes(1));
@@ -179,6 +203,9 @@ describe('evaluation flow regressions', () => {
 
     // USER ACTION
     fireEvent.press(getByLabelText('Ulkonäkö: arvo 8'));
+    fireEvent.press(getByLabelText('Tuoksu: arvo 7'));
+    fireEvent.press(getByLabelText('Maku: arvo 9'));
+    fireEvent.press(getByLabelText('Rakenne: arvo 6'));
     fireEvent.press(getByLabelText('Tallenna arvio'));
 
     // ASSERT SAVE
@@ -238,6 +265,9 @@ describe('evaluation flow regressions', () => {
     );
 
     fireEvent.press(getByLabelText('Ulkonäkö: arvo 8'));
+    fireEvent.press(getByLabelText('Tuoksu: arvo 7'));
+    fireEvent.press(getByLabelText('Maku: arvo 9'));
+    fireEvent.press(getByLabelText('Rakenne: arvo 6'));
     fireEvent.press(getByLabelText('Tallenna arvio'));
 
     await waitFor(() => {

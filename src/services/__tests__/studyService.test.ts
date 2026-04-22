@@ -38,7 +38,36 @@ describe('studyService', () => {
         id: 'id1',
         title: 'Aistinvarainen arviointi',
         samples: ['a', 'b'],
-        questions: [],
+        questions: [
+          {
+            id: 'appearance',
+            label: 'Ulkonäkö',
+            type: 'scale',
+            minScore: 0,
+            maxScore: 10,
+          },
+          {
+            id: 'smell',
+            label: 'Tuoksu',
+            type: 'scale',
+            minScore: 0,
+            maxScore: 10,
+          },
+          {
+            id: 'taste',
+            label: 'Maku',
+            type: 'scale',
+            minScore: 0,
+            maxScore: 10,
+          },
+          {
+            id: 'texture',
+            label: 'Rakenne',
+            type: 'scale',
+            minScore: 0,
+            maxScore: 10,
+          },
+        ],
       });
     });
 
@@ -72,7 +101,12 @@ describe('studyService', () => {
             data: () => ({
               title: 'Jogurttitesti',
               samples: ['451', '926'],
-              questions: [{ id: 'q1', label: 'Maku', type: 'scale' }],
+              questions: [
+                { id: 'appearance', label: 'Ulkonäkö', type: 'scale' },
+                { id: 'smell', label: 'Tuoksu', type: 'scale' },
+                { id: 'taste', label: 'Maku', type: 'scale' },
+                { id: 'texture', label: 'Rakenne', type: 'scale' },
+              ],
               isActive: true,
             }),
           },
@@ -85,7 +119,36 @@ describe('studyService', () => {
         id: 'questionnaire-1',
         title: 'Jogurttitesti',
         samples: ['451', '926'],
-        questions: [{ id: 'q1', label: 'Maku', type: 'scale' }],
+        questions: [
+          {
+            id: 'appearance',
+            label: 'Ulkonäkö',
+            type: 'scale',
+            minScore: 0,
+            maxScore: 10,
+          },
+          {
+            id: 'smell',
+            label: 'Tuoksu',
+            type: 'scale',
+            minScore: 0,
+            maxScore: 10,
+          },
+          {
+            id: 'taste',
+            label: 'Maku',
+            type: 'scale',
+            minScore: 0,
+            maxScore: 10,
+          },
+          {
+            id: 'texture',
+            label: 'Rakenne',
+            type: 'scale',
+            minScore: 0,
+            maxScore: 10,
+          },
+        ],
       });
     });
 
@@ -106,7 +169,36 @@ describe('studyService', () => {
         id: 'seed-dev-session',
         title: 'Aistinvarainen arviointi',
         samples: ['a', 'b'],
-        questions: [],
+        questions: [
+          {
+            id: 'appearance',
+            label: 'Ulkonäkö',
+            type: 'scale',
+            minScore: 0,
+            maxScore: 10,
+          },
+          {
+            id: 'smell',
+            label: 'Tuoksu',
+            type: 'scale',
+            minScore: 0,
+            maxScore: 10,
+          },
+          {
+            id: 'taste',
+            label: 'Maku',
+            type: 'scale',
+            minScore: 0,
+            maxScore: 10,
+          },
+          {
+            id: 'texture',
+            label: 'Rakenne',
+            type: 'scale',
+            minScore: 0,
+            maxScore: 10,
+          },
+        ],
       });
     });
 
@@ -135,7 +227,36 @@ describe('studyService', () => {
         id: 'doc1',
         title: 'Aistinvarainen arviointi',
         samples: ['x'],
-        questions: [],
+        questions: [
+          {
+            id: 'appearance',
+            label: 'Ulkonäkö',
+            type: 'scale',
+            minScore: 0,
+            maxScore: 10,
+          },
+          {
+            id: 'smell',
+            label: 'Tuoksu',
+            type: 'scale',
+            minScore: 0,
+            maxScore: 10,
+          },
+          {
+            id: 'taste',
+            label: 'Maku',
+            type: 'scale',
+            minScore: 0,
+            maxScore: 10,
+          },
+          {
+            id: 'texture',
+            label: 'Rakenne',
+            type: 'scale',
+            minScore: 0,
+            maxScore: 10,
+          },
+        ],
       });
     });
 
