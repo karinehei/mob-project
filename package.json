@@ -6,7 +6,7 @@
     "android": "react-native run-android",
     "android:wsl": "bash scripts/wsl-run-android.sh",
     "android:ci": "bash scripts/ci-assemble-debug.sh",
-    "ios": "react-native run-ios",
+    "ios": "node -e \"console.error('iOS ei kuulu tämän prototyypin scopeen. Käytä Androidia: npm run android.'); process.exit(1)\"",
     "start": "react-native start",
     "start:verbose": "react-native start --verbose",
     "start:wsl": "node scripts/metro-start-wsl.cjs",
