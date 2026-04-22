@@ -75,7 +75,7 @@ export const mockSamples: Sample[] = [
 export const mockEvaluationExample: Evaluation = {
   sampleId: 'sample-451',
   timestamp: '2026-04-02T14:30:00.000Z',
-  scores: {
+  answers: {
     'crit-451-color': 4,
     'crit-451-aroma': 5,
     'crit-451-texture': 6,
@@ -85,7 +85,7 @@ export const mockEvaluationExample: Evaluation = {
 /** Esimerkki payloadista, joka voisi lähteä lomakkeesta tallennukseen. */
 export const mockEvaluationPayloadExample: EvaluationPayload = {
   sampleId: 'sample-926',
-  scores: {
+  answers: {
     'crit-926-overall': 8,
     'crit-926-aftertaste': 7,
   },
