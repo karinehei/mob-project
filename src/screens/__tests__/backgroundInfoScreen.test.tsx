@@ -3,22 +3,22 @@ import { fireEvent, render, waitFor } from '@testing-library/react-native';
 
 import BackgroundInfoScreen from '../../screens/BackgroundInfoScreen';
 import { useSampleContext } from '../../context/SampleContext';
-import { saveRespondentProfile } from '../../services/respondentProfileService';
+import { saveResponseSession } from '../../services/responseSessionService';
 
 jest.mock('../../context/SampleContext', () => ({
   useSampleContext: jest.fn(),
 }));
 
-jest.mock('../../services/respondentProfileService', () => ({
-  saveRespondentProfile: jest.fn(),
+jest.mock('../../services/responseSessionService', () => ({
+  saveResponseSession: jest.fn(),
 }));
 
 describe('BackgroundInfoScreen', () => {
   const mockUseSampleContext = useSampleContext as jest.MockedFunction<
     typeof useSampleContext
   >;
-  const mockSaveRespondentProfile =
-    saveRespondentProfile as jest.MockedFunction<typeof saveRespondentProfile>;
+  const mockSaveResponseSession =
+    saveResponseSession as jest.MockedFunction<typeof saveResponseSession>;
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -52,7 +52,7 @@ describe('BackgroundInfoScreen', () => {
   });
 
   it('saves and navigates to result', async () => {
-    mockSaveRespondentProfile.mockResolvedValue(undefined);
+    mockSaveResponseSession.mockResolvedValue(undefined);
     const navigate = jest.fn();
 
     const { getByLabelText } = render(
@@ -67,7 +67,7 @@ describe('BackgroundInfoScreen', () => {
     fireEvent.press(getByLabelText('Tallenna taustatiedot'));
 
     await waitFor(() => {
-      expect(mockSaveRespondentProfile).toHaveBeenCalledWith({
+      expect(mockSaveResponseSession).toHaveBeenCalledWith({
         sessionId: 'sess-1',
         responseSessionId: 'resp-1',
         questionnaireTitle: 'Aistinvarainen arviointi',
