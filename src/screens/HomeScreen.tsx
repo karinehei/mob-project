@@ -29,6 +29,7 @@ export default function HomeScreen({ navigation }: Props): React.JSX.Element {
     questionnaireTitle,
     questionnaireQuestions,
     samples,
+    updateStatusMessage,
   } = useSampleContext();
 
   // loading state
@@ -130,6 +131,12 @@ export default function HomeScreen({ navigation }: Props): React.JSX.Element {
           showsVerticalScrollIndicator={false}
         >
           <Text style={styles.pageTitle}>{questionnaireTitle}</Text>
+
+          {updateStatusMessage ? (
+            <View style={styles.noticeBanner}>
+              <Text style={styles.noticeText}>{updateStatusMessage}</Text>
+            </View>
+          ) : null}
 
           <Pressable
             onPress={() => navigation.navigate('Admin')}
@@ -269,6 +276,18 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
     borderWidth: 1,
     borderColor: colors.border,
+  },
+  noticeBanner: {
+    marginTop: spacing.md,
+    padding: spacing.md,
+    borderRadius: 12,
+    backgroundColor: colors.surfaceMuted,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  noticeText: {
+    ...typography.body,
+    color: colors.textPrimary,
   },
   questionnaireCardTitle: {
     ...typography.body,

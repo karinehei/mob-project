@@ -25,9 +25,9 @@ export default function ResultScreen({
     ? 'Aloita uusi kierros'
     : 'Arvioi seuraava näyte';
 
-  const handleNextStep = () => {
+  const handleNextStep = async () => {
     if (flowCompleted) {
-      resetSession();
+      await resetSession();
     } else {
       nextSample();
     }
@@ -73,7 +73,9 @@ export default function ResultScreen({
         <View style={styles.footer}>
           <Pressable
             style={({ pressed }) => [styles.cta, pressed && styles.ctaPressed]}
-            onPress={handleNextStep}
+            onPress={() => {
+              handleNextStep().catch(() => undefined);
+            }}
             accessibilityRole="button"
             accessibilityLabel={primaryCtaLabel}
           >

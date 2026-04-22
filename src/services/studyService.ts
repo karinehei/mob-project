@@ -1,9 +1,12 @@
 import {
   collection,
   doc,
+  type DocumentData,
+  type QueryDocumentSnapshot,
   getDoc,
   getDocs,
   limit,
+  orderBy,
   query,
   where,
 } from 'firebase/firestore';
@@ -51,6 +54,64 @@ const DEFAULT_SENSORY_SCALE_QUESTIONS: QuestionnaireQuestion[] = [
     maxScore: 10,
   },
 ];
+
+type FirestoreTimestampLike = {
+  toMillis?: () => number;
+  seconds?: number;
+  nanoseconds?: number;
+};
+
+function updatedAtToMillis(value: unknown): number {
+  if (!value) {
+    return 0;
+  }
+  if (value instanceof Date) {
+    return value.getTime();
+  }
+  if (
+    typeof value === 'object' &&
+    value !== null &&
+    typeof (value as FirestoreTimestampLike).toMillis === 'function'
+  ) {
+    return (value as FirestoreTimestampLike).toMillis!();
+  }
+  if (
+    typeof value === 'object' &&
+    value !== null &&
+    typeof (value as FirestoreTimestampLike).seconds === 'number'
+  ) {
+    return (
+      (value as FirestoreTimestampLike).seconds! * 1000 +
+      Math.floor(((value as FirestoreTimestampLike).nanoseconds ?? 0) / 1_000_000)
+    );
+  }
+  return 0;
+}
+
+function pickLatestByUpdatedAt(
+  docs: QueryDocumentSnapshot<DocumentData>[],
+): QueryDocumentSnapshot<DocumentData> | null {
+  if (docs.length === 0) {
+    return null;
+  }
+
+  return docs.reduce((latest, current) => {
+    const latestMillis = updatedAtToMillis(latest.data()?.updatedAt);
+    const currentMillis = updatedAtToMillis(current.data()?.updatedAt);
+    return currentMillis > latestMillis ? current : latest;
+  });
+}
+
+function isMissingIndexError(error: unknown): boolean {
+  if (!(error instanceof Error)) {
+    return false;
+  }
+  const message = error.message.toLowerCase();
+  return (
+    message.includes('query requires an index') ||
+    message.includes('failed-precondition')
+  );
+}
 
 function normalizeQuestion(
   question: Record<string, unknown>,
@@ -142,16 +203,37 @@ export function mapSession(
 export async function fetchActiveStudySession(): Promise<StudySession | null> {
   try {
     const db = getFirestoreDb();
-    const questionnaireSnapshot = await getDocs(
-      query(
-        collection(db, FIRESTORE_COLLECTIONS.questionnaires),
-        where('isActive', '==', true),
-        limit(1),
-      ),
-    );
+    let questionnaireDoc: QueryDocumentSnapshot<DocumentData> | null = null;
 
-    if (!questionnaireSnapshot.empty) {
-      const questionnaireDoc = questionnaireSnapshot.docs[0];
+    try {
+      const questionnaireSnapshot = await getDocs(
+        query(
+          collection(db, FIRESTORE_COLLECTIONS.questionnaires),
+          where('isActive', '==', true),
+          orderBy('updatedAt', 'desc'),
+          limit(1),
+        ),
+      );
+      questionnaireDoc = questionnaireSnapshot.empty
+        ? null
+        : questionnaireSnapshot.docs[0];
+    } catch (error) {
+      if (!isMissingIndexError(error)) {
+        throw error;
+      }
+
+      // Fallback for dev/prototype projects without composite index:
+      // fetch active questionnaires and sort by updatedAt client-side.
+      const fallbackSnapshot = await getDocs(
+        query(
+          collection(db, FIRESTORE_COLLECTIONS.questionnaires),
+          where('isActive', '==', true),
+        ),
+      );
+      questionnaireDoc = pickLatestByUpdatedAt(fallbackSnapshot.docs);
+    }
+
+    if (questionnaireDoc) {
       return mapSession(questionnaireDoc.id, questionnaireDoc.data());
     }
 
