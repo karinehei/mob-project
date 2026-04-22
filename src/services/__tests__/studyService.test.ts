@@ -16,6 +16,7 @@ jest.mock('firebase/firestore', () => ({
   getDocs: jest.fn(),
   limit: jest.fn(),
   query: jest.fn(),
+  where: jest.fn(),
 }));
 
 // Mock DB getter
@@ -35,7 +36,9 @@ describe('studyService', () => {
 
       expect(result).toEqual({
         id: 'id1',
+        title: 'Aistinvarainen arviointi',
         samples: ['a', 'b'],
+        questions: [],
       });
     });
 
@@ -60,8 +63,37 @@ describe('studyService', () => {
 
   // fetchActiveStudySession
   describe('fetchActiveStudySession', () => {
+    it('palauttaa aktiivisen kyselyn jos löytyy', async () => {
+      (getDocs as jest.Mock).mockResolvedValueOnce({
+        empty: false,
+        docs: [
+          {
+            id: 'questionnaire-1',
+            data: () => ({
+              title: 'Jogurttitesti',
+              samples: ['451', '926'],
+              questions: [{ id: 'q1', label: 'Maku', type: 'scale' }],
+              isActive: true,
+            }),
+          },
+        ],
+      });
 
-    it('palauttaa seeded sessionin jos löytyy', async () => {
+      const result = await fetchActiveStudySession();
+
+      expect(result).toEqual({
+        id: 'questionnaire-1',
+        title: 'Jogurttitesti',
+        samples: ['451', '926'],
+        questions: [{ id: 'q1', label: 'Maku', type: 'scale' }],
+      });
+    });
+
+    it('palauttaa seeded sessionin jos aktiivista kyselyä ei löydy', async () => {
+      (getDocs as jest.Mock).mockResolvedValueOnce({
+        empty: true,
+        docs: [],
+      });
       (getDoc as jest.Mock).mockResolvedValue({
         exists: () => true,
         id: 'seed-dev-session',
@@ -72,41 +104,53 @@ describe('studyService', () => {
 
       expect(result).toEqual({
         id: 'seed-dev-session',
+        title: 'Aistinvarainen arviointi',
         samples: ['a', 'b'],
+        questions: [],
       });
     });
 
     it('fallback queryyn jos seeded ei löydy', async () => {
+      (getDocs as jest.Mock)
+        .mockResolvedValueOnce({
+          empty: true,
+          docs: [],
+        })
+        .mockResolvedValueOnce({
+          empty: false,
+          docs: [
+            {
+              id: 'doc1',
+              data: () => ({ samples: ['x'] }),
+            },
+          ],
+        });
       (getDoc as jest.Mock).mockResolvedValue({
         exists: () => false,
-      });
-
-      (getDocs as jest.Mock).mockResolvedValue({
-        empty: false,
-        docs: [
-          {
-            id: 'doc1',
-            data: () => ({ samples: ['x'] }),
-          },
-        ],
       });
 
       const result = await fetchActiveStudySession();
 
       expect(result).toEqual({
         id: 'doc1',
+        title: 'Aistinvarainen arviointi',
         samples: ['x'],
+        questions: [],
       });
     });
 
     it('palauttaa null jos ei sessioita', async () => {
+      (getDocs as jest.Mock)
+        .mockResolvedValueOnce({
+          empty: true,
+          docs: [],
+        })
+        .mockResolvedValueOnce({
+          empty: true,
+          docs: [],
+        });
       (getDoc as jest.Mock).mockResolvedValue({
         exists: () => false,
-      });
-
-      (getDocs as jest.Mock).mockResolvedValue({
-        empty: true,
-        docs: [],
       });
 
       const result = await fetchActiveStudySession();
@@ -115,7 +159,7 @@ describe('studyService', () => {
     });
 
     it('heitää virheen jos Firestore epäonnistuu', async () => {
-      (getDoc as jest.Mock).mockRejectedValue(
+      (getDocs as jest.Mock).mockRejectedValue(
         new Error('Firestore error'),
       );
 

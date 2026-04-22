@@ -7,12 +7,14 @@ import StudyScreen from '../screens/StudyScreen';
 import SampleScreen from '../screens/SampleScreen';
 import EvaluationScreen from '../screens/EvaluationScreen';
 import ResultScreen from '../screens/ResultScreen';
+import AdminScreen from '../screens/AdminScreen';
 
 export type RootStackParamList = {
   Home: undefined;
   Study: undefined;
   Sample: undefined;
   Evaluation: undefined;
+  Admin: undefined;
   Result:
     | {
         saveSucceeded?: boolean;
@@ -46,6 +48,11 @@ export function AppNavigator(): React.JSX.Element {
           name="Evaluation"
           component={EvaluationScreen}
           options={{ title: 'Arviointi' }}
+        />
+        <Stack.Screen
+          name="Admin"
+          component={AdminScreen}
+          options={{ title: 'Kyselyn hallinta' }}
         />
         <Stack.Screen
           name="Result"

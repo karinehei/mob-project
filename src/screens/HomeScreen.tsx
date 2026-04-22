@@ -68,6 +68,9 @@ export default function HomeScreen({ navigation }: Props): React.JSX.Element {
     error,
     retryLoadSession,
     setPendingAppearanceRating,
+    questionnaireTitle,
+    questionnaireQuestions,
+    samples,
   } = useSampleContext();
 
   // loading state
@@ -103,6 +106,17 @@ export default function HomeScreen({ navigation }: Props): React.JSX.Element {
           >
             <Text style={styles.retryButtonLabel}>Yritä uudelleen</Text>
           </Pressable>
+          <Pressable
+            onPress={() => navigation.navigate('Admin')}
+            style={({ pressed }) => [
+              styles.ghostButton,
+              pressed && styles.ghostButtonPressed,
+            ]}
+            accessibilityRole="button"
+            accessibilityLabel="Avaa kyselyn hallinta"
+          >
+            <Text style={styles.ghostButtonLabel}>Avaa kyselyn hallinta</Text>
+          </Pressable>
         </View>
       </ScreenContainer>
     );
@@ -130,6 +144,17 @@ export default function HomeScreen({ navigation }: Props): React.JSX.Element {
           >
             <Text style={styles.retryButtonLabel}>Päivitä</Text>
           </Pressable>
+          <Pressable
+            onPress={() => navigation.navigate('Admin')}
+            style={({ pressed }) => [
+              styles.ghostButton,
+              pressed && styles.ghostButtonPressed,
+            ]}
+            accessibilityRole="button"
+            accessibilityLabel="Avaa kyselyn hallinta"
+          >
+            <Text style={styles.ghostButtonLabel}>Avaa kyselyn hallinta</Text>
+          </Pressable>
         </View>
       </ScreenContainer>
     );
@@ -146,7 +171,39 @@ export default function HomeScreen({ navigation }: Props): React.JSX.Element {
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
-          <Text style={styles.pageTitle}>Aistinvarainen arviointi</Text>
+          <Text style={styles.pageTitle}>{questionnaireTitle}</Text>
+
+          <Pressable
+            onPress={() => navigation.navigate('Admin')}
+            style={({ pressed }) => [
+              styles.secondaryCta,
+              pressed && styles.secondaryCtaPressed,
+            ]}
+            accessibilityRole="button"
+            accessibilityLabel="Avaa kyselyn hallinta"
+          >
+            <Text style={styles.secondaryCtaLabel}>Hallinnoi kyselyä</Text>
+          </Pressable>
+
+          <View style={styles.questionnaireCard}>
+            <Text style={styles.questionnaireCardTitle}>Aktiivinen kysely</Text>
+            <Text style={styles.questionnaireCardBody}>
+              Näytteitä: {samples.length} / kysymyksiä: {questionnaireQuestions.length}
+            </Text>
+            {questionnaireQuestions.length > 0 ? (
+              <View style={styles.questionList}>
+                {questionnaireQuestions.map((question) => (
+                  <Text key={question.id} style={styles.questionListItem}>
+                    • {question.label}
+                  </Text>
+                ))}
+              </View>
+            ) : (
+              <Text style={styles.questionnaireCardHint}>
+                Luo tai tuo uusi kysely hallintanäkymässä.
+              </Text>
+            )}
+          </View>
 
           <View style={styles.sampleCard}>
             <Text style={styles.sampleLabel}>Nykyinen näytekoodi:</Text>
@@ -268,6 +325,37 @@ const styles = StyleSheet.create({
     shadowRadius: 6,
     elevation: 2,
   },
+  questionnaireCard: {
+    marginTop: spacing.lg,
+    padding: spacing.lg,
+    borderRadius: 16,
+    backgroundColor: colors.background,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  questionnaireCardTitle: {
+    ...typography.body,
+    fontWeight: '700',
+    color: colors.textPrimary,
+  },
+  questionnaireCardBody: {
+    marginTop: spacing.sm,
+    ...typography.body,
+    color: colors.textSecondary,
+  },
+  questionnaireCardHint: {
+    marginTop: spacing.sm,
+    ...typography.caption,
+    color: colors.textMuted,
+  },
+  questionList: {
+    marginTop: spacing.sm,
+    gap: spacing.xs,
+  },
+  questionListItem: {
+    ...typography.body,
+    color: colors.textPrimary,
+  },
   ratingCardTitle: {
     ...typography.body,
     fontWeight: '700',
@@ -335,6 +423,24 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 5,
   },
+  secondaryCta: {
+    marginTop: spacing.md,
+    alignSelf: 'flex-start',
+    borderRadius: 999,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.md,
+    backgroundColor: colors.surfaceMuted,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  secondaryCtaPressed: {
+    opacity: 0.9,
+  },
+  secondaryCtaLabel: {
+    ...typography.body,
+    fontWeight: '600',
+    color: colors.textPrimary,
+  },
   ctaPressed: {
     opacity: 0.9,
   },
@@ -370,5 +476,22 @@ const styles = StyleSheet.create({
     ...typography.body,
     fontWeight: '700',
     color: colors.onPrimary,
+  },
+  ghostButton: {
+    marginTop: spacing.sm,
+    borderRadius: 999,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.lg,
+    borderWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: colors.surfaceMuted,
+  },
+  ghostButtonPressed: {
+    opacity: 0.9,
+  },
+  ghostButtonLabel: {
+    ...typography.body,
+    fontWeight: '600',
+    color: colors.textPrimary,
   },
 });
