@@ -75,6 +75,7 @@ npm run android
 | `npm run typecheck` | `tsc --noEmit`. |
 | `npm run test` | Jest. |
 | `npm run seed` | Kirjoittaa kehitysdatan Firestoreen (`scripts/seedFirestore.ts`). Katso [Firestore-seed](#firestore-seed-kehitysdata) ja `--dry-run`. |
+| `npm run export:csv` | Vie vastaukset Firestoresta CSV-muotoon (`scripts/exportResponsesCsv.ts`). |
 
 ## Android: emulaattori tai oma puhelin
 
@@ -180,6 +181,7 @@ Kun muutat `.env`-tiedostoa, käynnistä Metro uudelleen (tarvittaessa `npm star
 - Arviointi: **Arviointi**-näkymä tallentaa näytekohtaisen dokumentin kokoelmaan `evaluations` kentillä `sampleCode`, `answers`, `ratingSummary`, `sessionId`, `responseSessionId`, `samplePresentationOrder`, `samplePresentationIndex`, `createdAt`.
 - Satunnaistus: näytteet haetaan backendistä ja niiden järjestys satunnaistetaan per vastaussessio. Sama sessio käyttää lukittua järjestystä koko kierroksen ajan.
 - Koko vastausmalli: **Taustatiedot**-vaihe hakee `responseSessionId`:n kaikki `evaluations`-dokumentit ja tallentaa koko koonnin `responseSessions`-kokoelmaan (`backgroundInfo`, `evaluations`, `createdAt`).
+- CSV-vienti: backend-skripti lukee `responseSessions`-kokoelman ja kirjoittaa yksi rivi / arvioitu näyte -muotoisen CSV-tiedoston (näytekoodi, vastaukset, taustatiedot, aikaleimat).
 - Hallinta: `Admin`-näkymässä ylläpitäjä voi luoda uuden kyselyn käsin tai tuoda sen JSON-muodossa. Tallennus deaktivoi aiemmat aktiiviset kyselyt ja merkitsee uuden dokumentin aktiiviseksi.
 - **Säännöt:** Firebase Console → Firestore → Rules. Ilman luku- ja kirjoitusoikeutta `questionnaires`-kokoelmaan hallintanäkymä ei pysty tallentamaan eikä mobiilisovellus hakemaan aktiivista kyselyä. Tuotantoon älä jätä avoimia testisääntöjä.
 
@@ -272,6 +274,29 @@ service cloud.firestore {
 **Huom:** `fetchActiveStudySession` hakee ensin yhden aktiivisen kyselyn kokoelmasta `questionnaires` (`isActive == true`, `limit(1)`). Jos sieltä ei löydy dokumenttia, palvelu fallbackaa `seed-dev-session`-dokumenttiin ja lopuksi ensimmäiseen `sessions`-dokumenttiin. Devissä pidä mieluummin vain yksi aktiivinen kysely.
 
 - **`android/local.properties`:** paikallinen SDK-polku, ei repossa.
+
+### Tulosten vienti CSV-muotoon
+
+Tulokset voidaan viedä taulukkolaskentaohjelmille sopivaan CSV-muotoon:
+
+```bash
+# Luo CSV automaattisella nimellä kansioon exports/
+npm run export:csv
+
+# Tai anna oma tiedostonimi
+npm run export:csv -- --out exports/vastaukset.csv
+```
+
+Vienti käyttää `responseSessions`-kokoelmaa ja tuottaa rivit muodossa **yksi rivi per arvioitu näyte**. CSV sisältää:
+
+- vastaussession tunnisteet (`responseSessionId`, `sessionId`)
+- kyselyn nimen
+- taustatiedot (`respondentAge`, `respondentGender`)
+- näytekoodin ja esitysjärjestyksen tiedot
+- vastaus- ja arviointiaikaleimat
+- dynaamiset kysymysvastaukset sarakkeissa `q_<kysymysId>` (esim. `q_appearance`, `q_attributes`)
+
+Skripti kirjoittaa UTF-8 BOM -alkuisen CSV:n puolipiste-erottimella (`;`), jolloin tiedosto avautuu suoraan yleisissä taulukkolaskentaohjelmissa (esim. Excel, LibreOffice) myös suomenkielisessä alueasetuksessa.
 
 ## CI
 
