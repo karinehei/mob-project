@@ -14,6 +14,7 @@ jest.mock('../../context/SampleContext', () => ({
       { id: 'q1', label: 'Ulkonäkö', type: 'scale', minScore: 0, maxScore: 10 },
     ],
     samples: ['420'],
+    samplePresentationOrder: ['420'],
     currentIndex: 0,
     nextSample: jest.fn(),
     retryLoadSession: jest.fn(async () => {}),
