@@ -28,6 +28,10 @@ function buildScaleQuestions(lines: string[]): QuestionnaireQuestion[] {
   }));
 }
 
+function countScaleQuestions(questions: QuestionnaireQuestion[]): number {
+  return questions.filter((question) => question.type === 'scale').length;
+}
+
 function buildMultiSelectQuestion(
   label: string,
   options: string[],
@@ -57,6 +61,11 @@ export function buildQuestionnaireDraftFromManualInput(
   }
   if (scaleQuestions.length === 0) {
     throw new Error('Lisää vähintään yksi arviointikysymys.');
+  }
+  if (scaleQuestions.length < 4) {
+    throw new Error(
+      'Lisää vähintään neljä asteikkokysymystä (ulkonäkö, tuoksu, maku, rakenne).',
+    );
   }
   if ((cataLabel && cataOptions.length === 0) || (!cataLabel && cataOptions.length > 0)) {
     throw new Error('CATA-kysymys tarvitsee sekä otsikon että vaihtoehdot.');
@@ -155,15 +164,23 @@ export function parseQuestionnaireImport(input: string): QuestionnaireDraft {
     throw new Error('Tuodusta kyselystä puuttuvat kysymykset.');
   }
 
+  const questions = rawQuestions.map((question, index) => {
+    if (!question || typeof question !== 'object' || Array.isArray(question)) {
+      throw new Error(`Kysymys ${index + 1} ei ole kelvollinen objekti.`);
+    }
+    return normalizeQuestion(question as Record<string, unknown>, index);
+  });
+
+  if (countScaleQuestions(questions) < 4) {
+    throw new Error(
+      'Tuodussa kyselyssä pitää olla vähintään neljä asteikkokysymystä.',
+    );
+  }
+
   return {
     title,
     samples,
-    questions: rawQuestions.map((question, index) => {
-      if (!question || typeof question !== 'object' || Array.isArray(question)) {
-        throw new Error(`Kysymys ${index + 1} ei ole kelvollinen objekti.`);
-      }
-      return normalizeQuestion(question as Record<string, unknown>, index);
-    }),
+    questions,
     isActive: record.isActive !== false,
   };
 }
