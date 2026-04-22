@@ -20,10 +20,6 @@ interface SampleContextType {
   error: string | null;
   nextSample: () => void;
   retryLoadSession: () => Promise<void>;
-  /** Ulkonäköpisteet 0–10; asetetaan etusivulta ennen Sample-näkymää */
-  pendingAppearanceRating: number | null;
-  setPendingAppearanceRating: (rating: number) => void;
-  clearPendingAppearanceRating: () => void;
   resetSession: () => void;
 }
 
@@ -55,9 +51,6 @@ export const SampleProvider: React.FC<ProviderProps> = ({ children }) => {
   const [currentIndex, setCurrentIndex] = useState<number>(0);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const [pendingAppearanceRating, setPendingAppearanceRating] = useState<
-    number | null
-  >(null);
 
   const loadSession = useCallback(async () => {
     try {
@@ -106,13 +99,8 @@ export const SampleProvider: React.FC<ProviderProps> = ({ children }) => {
     }
   };
 
-  const clearPendingAppearanceRating = () => {
-    setPendingAppearanceRating(null);
-  };
-
   const resetSession = () => {
     setCurrentIndex(0);
-    setPendingAppearanceRating(null);
   };
 
   return (
@@ -128,9 +116,6 @@ export const SampleProvider: React.FC<ProviderProps> = ({ children }) => {
         retryLoadSession: loadSession,
         isLoading,
         error,
-        pendingAppearanceRating,
-        setPendingAppearanceRating,
-        clearPendingAppearanceRating,
         resetSession,
       }}
     >

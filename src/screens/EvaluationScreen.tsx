@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   Pressable,
@@ -21,9 +21,117 @@ import {
   validateEvaluation,
   ValidationError,
 } from '../validation/validateEvaluation';
-import type { EvaluationPayload } from '../types/evaluation';
+import type { EvaluationAnswer } from '../types/evaluation';
+import { buildEvaluationPayload } from '../utils/buildEvaluationPayload';
+import type { QuestionnaireQuestion } from '../types/questionnaire';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Evaluation'>;
+
+type ScaleQuestionProps = {
+  question: QuestionnaireQuestion;
+  value: number | undefined;
+  onChange: (nextValue: number) => void;
+};
+
+type MultiSelectQuestionProps = {
+  question: QuestionnaireQuestion;
+  values: string[];
+  onToggle: (option: string) => void;
+};
+
+function ScaleQuestion({
+  question,
+  value,
+  onChange,
+}: ScaleQuestionProps): React.JSX.Element {
+  const minScore = question.minScore ?? 0;
+  const maxScore = question.maxScore ?? 10;
+  const values = useMemo(
+    () => Array.from({ length: maxScore - minScore + 1 }, (_, index) => minScore + index),
+    [maxScore, minScore],
+  );
+
+  return (
+    <View style={styles.questionCard}>
+      <Text style={styles.questionTitle}>{question.label}</Text>
+      <Text style={styles.scaleLegend}>
+        {minScore} = alin arvo{'\n'}
+        {maxScore} = ylin arvo
+      </Text>
+      <View style={styles.optionsWrap}>
+        {values.map((optionValue) => {
+          const selected = value === optionValue;
+          return (
+            <Pressable
+              key={optionValue}
+              onPress={() => onChange(optionValue)}
+              style={({ pressed }) => [
+                styles.scaleChip,
+                selected && styles.scaleChipSelected,
+                pressed && !selected && styles.scaleChipPressed,
+              ]}
+              accessibilityRole="button"
+              accessibilityState={{ selected }}
+              accessibilityLabel={`${question.label}: arvo ${optionValue}`}
+            >
+              <Text
+                style={[
+                  styles.scaleChipText,
+                  selected && styles.scaleChipTextSelected,
+                ]}
+              >
+                {optionValue}
+              </Text>
+            </Pressable>
+          );
+        })}
+      </View>
+    </View>
+  );
+}
+
+function MultiSelectQuestion({
+  question,
+  values,
+  onToggle,
+}: MultiSelectQuestionProps): React.JSX.Element {
+  const options = question.options ?? [];
+
+  return (
+    <View style={styles.questionCard}>
+      <Text style={styles.questionTitle}>{question.label}</Text>
+      <Text style={styles.helpText}>Voit valita yhden tai useamman vaihtoehdon.</Text>
+      <View style={styles.optionsWrap}>
+        {options.map((option) => {
+          const selected = values.includes(option);
+          return (
+            <Pressable
+              key={option}
+              onPress={() => onToggle(option)}
+              style={({ pressed }) => [
+                styles.optionChip,
+                selected && styles.optionChipSelected,
+                pressed && !selected && styles.optionChipPressed,
+              ]}
+              accessibilityRole="button"
+              accessibilityState={{ selected }}
+              accessibilityLabel={`${question.label}: ${option}`}
+            >
+              <Text
+                style={[
+                  styles.optionChipText,
+                  selected && styles.optionChipTextSelected,
+                ]}
+              >
+                {option}
+              </Text>
+            </Pressable>
+          );
+        })}
+      </View>
+    </View>
+  );
+}
 
 function saveErrorMessage(err: unknown): string {
   if (err instanceof Error && err.message) {
@@ -40,8 +148,8 @@ export default function EvaluationScreen({
     currentIndex,
     samples,
     sessionId,
-    pendingAppearanceRating,
-    clearPendingAppearanceRating,
+    questionnaireTitle,
+    questionnaireQuestions,
     isLoading,
     error,
     retryLoadSession,
@@ -49,13 +157,14 @@ export default function EvaluationScreen({
 
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
+  const [answers, setAnswers] = useState<Record<string, EvaluationAnswer>>({});
 
   const [validationErrors, setValidationErrors] = useState<ValidationError[]>(
     [],
   );
 
   const canSave =
-    Boolean(currentSample) && pendingAppearanceRating !== null && !saving;
+    Boolean(currentSample) && questionnaireQuestions.length > 0 && !saving;
 
   if (isLoading) {
     return (
@@ -117,27 +226,35 @@ export default function EvaluationScreen({
     );
   }
 
+  const setScaleAnswer = (questionId: string, nextValue: number) => {
+    setAnswers((prev) => ({
+      ...prev,
+      [questionId]: nextValue,
+    }));
+  };
+
+  const toggleMultiSelectAnswer = (questionId: string, option: string) => {
+    setAnswers((prev) => {
+      const currentValue = Array.isArray(prev[questionId]) ? prev[questionId] : [];
+      const nextValues = currentValue.includes(option)
+        ? currentValue.filter((item) => item !== option)
+        : [...currentValue, option];
+
+      return {
+        ...prev,
+        [questionId]: nextValues,
+      };
+    });
+  };
+
   const onSave = async () => {
-    if (!currentSample || pendingAppearanceRating === null) {
-      setSaveError('Valitse pistemäärä etusivulla ja yritä uudelleen.');
+    if (!currentSample) {
+      setSaveError('Näytettä ei löytynyt. Palaa etusivulle ja yritä uudelleen.');
       return;
     }
 
-    const payload: EvaluationPayload = {
-      sampleId: currentSample,
-      scores: {
-        appearance: pendingAppearanceRating,
-      },
-    };
-
-    const errors = validateEvaluation(payload, [
-      {
-        id: 'appearance',
-        label: 'Ulkonäkö',
-        minScore: 1,
-        maxScore: 10,
-      },
-    ]);
+    const payload = buildEvaluationPayload(currentSample, answers);
+    const errors = validateEvaluation(payload, questionnaireQuestions);
 
     if (errors.length > 0) {
       setValidationErrors(errors);
@@ -151,13 +268,12 @@ export default function EvaluationScreen({
     try {
       await saveEvaluation({
         sampleCode: currentSample,
-        rating: pendingAppearanceRating,
         sessionId,
+        questionnaireTitle,
+        answers: payload.answers,
       });
 
       const isLastSample = currentIndex >= samples.length - 1;
-
-      clearPendingAppearanceRating();
 
       navigation.navigate('Result', {
         saveSucceeded: true,
@@ -183,19 +299,51 @@ export default function EvaluationScreen({
         >
           <Text style={styles.pageTitle}>Arviointi</Text>
 
-          <Text style={styles.lead}>Tallenna arvio Firestoreen</Text>
+          <Text style={styles.lead}>
+            Vastaa aktiivisen kyselyn kysymyksiin. Kysymykset renderoidaan
+            backendin skeemasta.
+          </Text>
 
           <View style={styles.infoCard}>
             <Text style={styles.infoTitle}>Istunto: {sessionId ?? '—'}</Text>
             <Text style={styles.infoBody}>
               Näyte: {currentSample ?? '—'}
               {'\n'}
-              Ulkonäkö / Appearance:{' '}
-              {pendingAppearanceRating !== null
-                ? `${pendingAppearanceRating} / 10`
-                : 'Valitse etusivulla'}
+              Kysely: {questionnaireTitle}
+              {'\n'}
+              Kysymyksiä: {questionnaireQuestions.length}
             </Text>
           </View>
+
+          {questionnaireQuestions.map((question) =>
+            question.type === 'scale' ? (
+              <ScaleQuestion
+                key={question.id}
+                question={question}
+                value={
+                  typeof answers[question.id] === 'number'
+                    ? (answers[question.id] as number)
+                    : undefined
+                }
+                onChange={(nextValue) => {
+                  setScaleAnswer(question.id, nextValue);
+                }}
+              />
+            ) : (
+              <MultiSelectQuestion
+                key={question.id}
+                question={question}
+                values={
+                  Array.isArray(answers[question.id])
+                    ? (answers[question.id] as string[])
+                    : []
+                }
+                onToggle={(option) => {
+                  toggleMultiSelectAnswer(question.id, option);
+                }}
+              />
+            ),
+          )}
 
           {saveError ? (
             <View style={styles.errorBanner}>
@@ -261,6 +409,19 @@ const styles = StyleSheet.create({
     ...typography.body,
     color: colors.textSecondary,
   },
+  questionCard: {
+    marginTop: spacing.md,
+    padding: spacing.lg,
+    borderRadius: 16,
+    backgroundColor: colors.background,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  questionTitle: {
+    ...typography.body,
+    fontWeight: '700',
+    color: colors.textPrimary,
+  },
   infoCard: {
     marginTop: spacing.lg,
     padding: spacing.lg,
@@ -296,6 +457,72 @@ const styles = StyleSheet.create({
   errorText: {
     ...typography.body,
     color: colors.textPrimary,
+  },
+  scaleLegend: {
+    marginTop: spacing.sm,
+    ...typography.caption,
+    color: colors.textMuted,
+    lineHeight: 18,
+  },
+  helpText: {
+    marginTop: spacing.sm,
+    ...typography.caption,
+    color: colors.textMuted,
+  },
+  optionsWrap: {
+    marginTop: spacing.md,
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.sm,
+  },
+  scaleChip: {
+    minWidth: 44,
+    minHeight: 44,
+    paddingHorizontal: spacing.sm,
+    borderRadius: 999,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.surfaceMuted,
+  },
+  scaleChipSelected: {
+    backgroundColor: colors.ratingSelectedBg,
+    borderWidth: 2,
+    borderColor: colors.ratingSelectedBorder,
+  },
+  scaleChipPressed: {
+    opacity: 0.92,
+  },
+  scaleChipText: {
+    ...typography.body,
+    fontWeight: '600',
+    color: colors.textPrimary,
+  },
+  scaleChipTextSelected: {
+    color: colors.sampleAccent,
+  },
+  optionChip: {
+    minHeight: 44,
+    borderRadius: 999,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    backgroundColor: colors.surfaceMuted,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  optionChipSelected: {
+    backgroundColor: colors.sampleCardBg,
+    borderColor: colors.primary,
+  },
+  optionChipPressed: {
+    opacity: 0.92,
+  },
+  optionChipText: {
+    ...typography.body,
+    color: colors.textPrimary,
+  },
+  optionChipTextSelected: {
+    fontWeight: '700',
+    color: colors.sampleAccent,
   },
   footer: {
     paddingHorizontal: spacing.lg,
