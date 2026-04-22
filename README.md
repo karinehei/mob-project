@@ -21,8 +21,8 @@ React Native -mobiilisovelluksen kehitysrunko (tutkimus/food-study -konteksti). 
 
 - **Navigaatio:** `Home`, `Sample`, `Evaluation`, `Result` sekä `Admin`-näkymä kyselyiden hallintaan.
 - **UI:** `ScreenContainer`, `PlaceholderBlock`, `Button`, teemat (`colors`, `typography`, `spacing`).
-- **Tila / kyselydata:** `SampleContext` välittää aktiivisen kyselyn nimen, kysymykset ja näytekoodit näkymille.
-- **Palvelut:** `studyService`, `evaluationService`, `questionnaireService`.
+- **Tila / kyselydata:** `SampleContext` välittää aktiivisen kyselyn nimen, dynaamiset kysymykset, näytekoodit sekä sessiokohtaisen satunnaistetun esitysjärjestyksen.
+- **Palvelut:** `studyService`, `evaluationService`, `questionnaireService`, `responseSessionService`.
 - **Firebase:** `firebaseConfig`, app-init, Firestore-instanssi — täytä konfiguraatio paikallisesti; älä commitoi avaimia.
 - **Patch:** `patch-package` korjaa RN 0.76.x Metron `indexPageMiddleware` -ongelman (`postinstall`).
 
@@ -115,7 +115,7 @@ Debugissa: Metron ei tavoiteta (sammutettu, väärä verkko, WSL↔Windows) tai 
 │   ├── hooks/             # usePlaceholder
 │   ├── navigation/        # RootNavigator, tyypit
 │   ├── screens/           # HomeScreen, StudyScreen, AdminScreen, ...
-│   ├── services/          # studyService, evaluationService, questionnaireService
+│   ├── services/          # studyService, evaluationService, questionnaireService, responseSessionService
 │   ├── theme/             # colors, typography, spacing
 │   ├── types/             # domain-tyypit (myös questionnaire)
 │   └── utils/             # apufunktiot + testit (myös questionnaire builder)
@@ -167,10 +167,12 @@ Kun muutat `.env`-tiedostoa, käynnistä Metro uudelleen (tarvittaessa `npm star
 
 ### Firestore (sovellus)
 
-- Kokoelmat: **`questionnaires`** (aktiivinen kysely hallintanäkymästä), **`sessions`** (fallback / seed), **`evaluations`** (luodaan automaattisesti ensimmäisellä tallennuksella).
+- Kokoelmat: **`questionnaires`** (aktiivinen kysely hallintanäkymästä), **`sessions`** (fallback / seed), **`evaluations`** (näytekohtaiset vastaukset), **`responseSessions`** (vastaajakohtainen kooste: kaikki vastaukset + taustatiedot), **`respondentProfiles`** (legacy/prototyyppikokoelma).
 - Aktiivinen kysely: sovellus hakee ensin yhden dokumentin kokoelmasta `questionnaires`, ehdolla `isActive == true`. Jos aktiivista kyselyä ei löydy, sovellus fallbackaa `sessions`-kokoelmaan kuten aiemmin.
 - Kyselyn rakenne: dokumentissa käytetään kenttiä `title`, `samples`, `questions`, `isActive`, `createdAt`, `updatedAt`. Kysymys tukee vähintään tyyppejä `scale` ja `multiSelect`.
-- Arviointi: etusivun pistemäärä välittyy kontekstilla → **Arviointi** → **Tallenna ja jatka** kirjoittaa dokumentin kentillä `sampleCode`, `rating`, `sessionId`, `createdAt`.
+- Arviointi: **Arviointi**-näkymä tallentaa näytekohtaisen dokumentin kokoelmaan `evaluations` kentillä `sampleCode`, `answers`, `ratingSummary`, `sessionId`, `responseSessionId`, `samplePresentationOrder`, `samplePresentationIndex`, `createdAt`.
+- Satunnaistus: näytteet haetaan backendistä ja niiden järjestys satunnaistetaan per vastaussessio. Sama sessio käyttää lukittua järjestystä koko kierroksen ajan.
+- Koko vastausmalli: **Taustatiedot**-vaihe hakee `responseSessionId`:n kaikki `evaluations`-dokumentit ja tallentaa koko koonnin `responseSessions`-kokoelmaan (`backgroundInfo`, `evaluations`, `createdAt`).
 - Hallinta: `Admin`-näkymässä ylläpitäjä voi luoda uuden kyselyn käsin tai tuoda sen JSON-muodossa. Tallennus deaktivoi aiemmat aktiiviset kyselyt ja merkitsee uuden dokumentin aktiiviseksi.
 - **Säännöt:** Firebase Console → Firestore → Rules. Ilman luku- ja kirjoitusoikeutta `questionnaires`-kokoelmaan hallintanäkymä ei pysty tallentamaan eikä mobiilisovellus hakemaan aktiivista kyselyä. Tuotantoon älä jätä avoimia testisääntöjä.
 
@@ -228,7 +230,7 @@ npm run seed
 
 Lisäksi voit yliajaa ympäristömuuttujilla komentoriviltä (esim. `FIREBASE_SEED_ALLOW_PROJECT=... npm run seed`).
 
-**Firestore rules:** seed käyttää Web SDK:ta ilman Admin-oikeuksia — devissä sääntöjen pitää sallia **luku ja kirjoitus** kokoelmiin `sessions`, `samples` ja `evaluations`. Jos käytät hallintanäkymää, säännöt pitää sallia lisäksi kokoelmalle `questionnaires`.
+**Firestore rules:** seed käyttää Web SDK:ta ilman Admin-oikeuksia — devissä sääntöjen pitää sallia **luku ja kirjoitus** kokoelmiin `sessions`, `samples` ja `evaluations`. Jos käytät hallintanäkymää ja täyttä vastausmallia, säännöt pitää sallia lisäksi kokoelmille `questionnaires`, `responseSessions` ja `respondentProfiles`.
 
 **Jos `permission-denied` / `PERMISSION_DENIED`:** tietokanta on todennäköisesti luotu **Production**-tilassa tai säännöt kiellävät kirjoituksen. Avaa **Firebase Console** → **Firestore Database** → **Rules** ja julkaise **vain kehitysprojektiin** esimerkiksi alla oleva (korvaa myöhemmin authilla ja tiukemmilla ehdoilla):
 
@@ -246,6 +248,12 @@ service cloud.firestore {
       allow read, write: if true;
     }
     match /evaluations/{document} {
+      allow read, write: if true;
+    }
+    match /responseSessions/{document} {
+      allow read, write: if true;
+    }
+    match /respondentProfiles/{document} {
       allow read, write: if true;
     }
   }
@@ -270,7 +278,7 @@ Epäonnistunut vaihe (mukaan lukien Android-build) **estää merge-ehdon**, jos 
 
 - Navigaatio: Stack/Tab; kytke `StudyScreen` ja `ROUTES` käyttöön `RootNavigator`-tasolla.
 - Firestore: tiukenna security rules ja auth; lisää kyselyille versiointi / audit trail tarvittaessa.
-- Korvaa nykyinen yksinkertainen arviointitallennus dynaamisella kysymysvastauksella (`scale` + `multiSelect`).
+- Lisää `responseSessions`-dokumentille vienti (CSV/XLS) ja raportointinäkymä.
 - Laajenna hallintanäkymää useampiin kysymystyyppeihin ja muokkaustukeen.
 - CI: iOS-build tai release-allekirjoitus, jos natiivia halutaan laajentaa.
 

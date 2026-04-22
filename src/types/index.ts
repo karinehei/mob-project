@@ -11,4 +11,8 @@ export type {
   QuestionnaireQuestion,
   QuestionnaireQuestionType,
 } from './questionnaire';
+export type {
+  AggregatedEvaluationAnswer,
+  ResponseSessionRecord,
+} from './responseSession';
 export type { Sample } from './sample';
