@@ -16,6 +16,8 @@ export type SaveEvaluationInput = {
   responseSessionId: string;
   answers: Record<string, EvaluationAnswer>;
   questionnaireTitle?: string | null;
+  samplePresentationOrder: string[];
+  samplePresentationIndex: number;
 };
 
 export interface SampleRecord {
@@ -41,6 +43,16 @@ export async function saveEvaluation(
   if (!input.responseSessionId.trim()) {
     throw new Error('Vastaussession tunniste puuttuu.');
   }
+  if (!Array.isArray(input.samplePresentationOrder) || input.samplePresentationOrder.length === 0) {
+    throw new Error('Näytteiden esitysjärjestys puuttuu.');
+  }
+  if (
+    !Number.isInteger(input.samplePresentationIndex) ||
+    input.samplePresentationIndex < 0 ||
+    input.samplePresentationIndex >= input.samplePresentationOrder.length
+  ) {
+    throw new Error('Näytteen järjestysindeksi on virheellinen.');
+  }
 
   try {
     const db = getFirestoreDb();
@@ -63,6 +75,8 @@ export async function saveEvaluation(
       sessionId: input.sessionId,
       responseSessionId: input.responseSessionId,
       questionnaireTitle: input.questionnaireTitle ?? null,
+      samplePresentationOrder: input.samplePresentationOrder,
+      samplePresentationIndex: input.samplePresentationIndex,
       createdAt: serverTimestamp(),
     });
   } catch (error) {

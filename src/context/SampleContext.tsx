@@ -8,6 +8,7 @@ import React, {
 } from 'react';
 import { fetchActiveStudySession } from '../services/studyService';
 import type { QuestionnaireQuestion } from '../types/questionnaire';
+import { shuffleSamples } from '../utils/shuffleSamples';
 
 function createResponseSessionId(): string {
   return `resp-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
@@ -19,6 +20,7 @@ interface SampleContextType {
   questionnaireTitle: string;
   questionnaireQuestions: QuestionnaireQuestion[];
   samples: string[];
+  samplePresentationOrder: string[];
   currentIndex: number;
   currentSample: string | null;
   isLoading: boolean;
@@ -67,11 +69,12 @@ export const SampleProvider: React.FC<ProviderProps> = ({ children }) => {
       const session = await fetchActiveStudySession();
 
       if (session && session.samples.length > 0) {
+        const shuffledSamples = shuffleSamples(session.samples);
         setSessionId(session.id);
         setResponseSessionId(createResponseSessionId());
         setQuestionnaireTitle(session.title);
         setQuestionnaireQuestions(session.questions);
-        setSamples(session.samples);
+        setSamples(shuffledSamples);
         setCurrentIndex(0);
       } else {
         setSessionId(null);
@@ -112,6 +115,7 @@ export const SampleProvider: React.FC<ProviderProps> = ({ children }) => {
   const resetSession = () => {
     setCurrentIndex(0);
     setResponseSessionId(createResponseSessionId());
+    setSamples((prev) => shuffleSamples(prev));
   };
 
   return (
@@ -122,6 +126,7 @@ export const SampleProvider: React.FC<ProviderProps> = ({ children }) => {
         questionnaireTitle,
         questionnaireQuestions,
         samples,
+        samplePresentationOrder: samples,
         currentIndex,
         currentSample,
         nextSample,
