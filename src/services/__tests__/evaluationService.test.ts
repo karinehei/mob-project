@@ -25,6 +25,7 @@ describe('saveEvaluation', () => {
     await saveEvaluation({
       sampleCode: ' 451 ',
       sessionId: 'sess-1',
+      responseSessionId: 'resp-1',
       questionnaireTitle: 'Jogurttitesti',
       answers: {
         appearance: 8,
@@ -42,6 +43,7 @@ describe('saveEvaluation', () => {
       },
       ratingSummary: 8,
       sessionId: 'sess-1',
+      responseSessionId: 'resp-1',
       questionnaireTitle: 'Jogurttitesti',
       createdAt: { __serverTimestamp: true },
     });
@@ -49,14 +51,35 @@ describe('saveEvaluation', () => {
 
   it('rejects empty sample code', async () => {
     await expect(
-      saveEvaluation({ sampleCode: '   ', sessionId: null, answers: { a: 5 } }),
+      saveEvaluation({
+        sampleCode: '   ',
+        sessionId: null,
+        responseSessionId: 'resp-1',
+        answers: { a: 5 },
+      }),
     ).rejects.toThrow('Näytekoodi');
   });
 
   it('rejects missing answers', async () => {
     await expect(
-      saveEvaluation({ sampleCode: '1', sessionId: null, answers: {} }),
+      saveEvaluation({
+        sampleCode: '1',
+        sessionId: null,
+        responseSessionId: 'resp-1',
+        answers: {},
+      }),
     ).rejects.toThrow('Vastaukset');
+  });
+
+  it('rejects missing response session id', async () => {
+    await expect(
+      saveEvaluation({
+        sampleCode: '1',
+        sessionId: null,
+        responseSessionId: ' ',
+        answers: { a: 3 },
+      }),
+    ).rejects.toThrow('Vastaussession');
   });
 });
 
