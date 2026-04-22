@@ -1,7 +1,9 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
+  Linking,
   Pressable,
+  Share,
   ScrollView,
   StyleSheet,
   Text,
@@ -13,6 +15,7 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { ScreenContainer } from '../components/ScreenContainer';
 import { StudyAppBar } from '../components/StudyAppBar';
 import { RootStackParamList } from '../navigation/AppNavigator';
+import { exportResults, getResultExportOptions } from '../services/resultsExportService';
 import { saveQuestionnaire } from '../services/questionnaireService';
 import { colors } from '../theme/colors';
 import { spacing } from '../theme/spacing';
@@ -56,8 +59,17 @@ export default function AdminScreen({ navigation }: Props): React.JSX.Element {
   const [cataOptionsText, setCataOptionsText] = useState('makea, hapan, pehmeä');
   const [importText, setImportText] = useState('');
   const [saving, setSaving] = useState(false);
+  const [loadingExportOptions, setLoadingExportOptions] = useState(false);
+  const [exporting, setExporting] = useState(false);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [questionnaireOptions, setQuestionnaireOptions] = useState<string[]>([]);
+  const [sessionOptions, setSessionOptions] = useState<string[]>([]);
+  const [exportScope, setExportScope] = useState<'questionnaire' | 'session'>(
+    'questionnaire',
+  );
+  const [selectedExportValue, setSelectedExportValue] = useState('');
+  const [exportFormat, setExportFormat] = useState<'csv' | 'xls'>('csv');
 
   const preview = useMemo(() => {
     try {
@@ -72,6 +84,36 @@ export default function AdminScreen({ navigation }: Props): React.JSX.Element {
       return null;
     }
   }, [title, samplesText, scaleQuestionsText, cataQuestionLabel, cataOptionsText]);
+
+  const exportOptions = exportScope === 'questionnaire' ? questionnaireOptions : sessionOptions;
+
+  useEffect(() => {
+    const loadExportOptions = async () => {
+      setLoadingExportOptions(true);
+      try {
+        const options = await getResultExportOptions();
+        setQuestionnaireOptions(options.questionnaireOptions.map((item) => item.value));
+        setSessionOptions(options.sessionOptions.map((item) => item.value));
+      } catch {
+        // Keep export section usable even if options loading fails.
+      } finally {
+        setLoadingExportOptions(false);
+      }
+    };
+
+    loadExportOptions().catch(() => undefined);
+  }, []);
+
+  useEffect(() => {
+    if (exportOptions.length > 0) {
+      if (!exportOptions.includes(selectedExportValue)) {
+        setSelectedExportValue(exportOptions[0]);
+      }
+      return;
+    }
+
+    setSelectedExportValue('');
+  }, [exportScope, exportOptions, selectedExportValue]);
 
   const persistDraft = async (mode: 'manual' | 'import') => {
     setSaving(true);
@@ -98,6 +140,31 @@ export default function AdminScreen({ navigation }: Props): React.JSX.Element {
       setErrorMessage(getErrorMessage(error));
     } finally {
       setSaving(false);
+    }
+  };
+
+  const onStartExport = async () => {
+    setExporting(true);
+    setErrorMessage(null);
+    try {
+      const result = await exportResults(exportScope, selectedExportValue, exportFormat);
+      const payload = `\uFEFF${result.content}`;
+      const dataUri = `data:${result.mimeType};charset=utf-8,${encodeURIComponent(payload)}`;
+
+      try {
+        await Linking.openURL(dataUri);
+      } catch {
+        await Share.share({
+          title: result.filename,
+          message: payload,
+        });
+      }
+
+      setStatusMessage(`Vienti valmis: ${result.filename}`);
+    } catch (error) {
+      setErrorMessage(getErrorMessage(error));
+    } finally {
+      setExporting(false);
     }
   };
 
@@ -250,6 +317,159 @@ export default function AdminScreen({ navigation }: Props): React.JSX.Element {
               <Text style={styles.secondaryButtonLabel}>Tuo ja aktivoi kysely</Text>
             </Pressable>
           </View>
+
+          <View style={styles.card}>
+            <Text style={styles.cardTitle}>Tulosten vienti</Text>
+            <Text style={styles.helpText}>
+              Valitse kysely tai tutkimussessio ja lataa tulokset CSV/XLS-muotoon.
+            </Text>
+
+            <Text style={styles.label}>Vientikohde</Text>
+            <View style={styles.toggleWrap}>
+              <Pressable
+                style={({ pressed }) => [
+                  styles.toggleChip,
+                  exportScope === 'questionnaire' && styles.toggleChipSelected,
+                  pressed && styles.toggleChipPressed,
+                ]}
+                onPress={() => setExportScope('questionnaire')}
+                accessibilityRole="button"
+                accessibilityLabel="Valitse vientikohteeksi kysely"
+              >
+                <Text
+                  style={[
+                    styles.toggleChipText,
+                    exportScope === 'questionnaire' && styles.toggleChipTextSelected,
+                  ]}
+                >
+                  Kysely
+                </Text>
+              </Pressable>
+              <Pressable
+                style={({ pressed }) => [
+                  styles.toggleChip,
+                  exportScope === 'session' && styles.toggleChipSelected,
+                  pressed && styles.toggleChipPressed,
+                ]}
+                onPress={() => setExportScope('session')}
+                accessibilityRole="button"
+                accessibilityLabel="Valitse vientikohteeksi tutkimussessio"
+              >
+                <Text
+                  style={[
+                    styles.toggleChipText,
+                    exportScope === 'session' && styles.toggleChipTextSelected,
+                  ]}
+                >
+                  Sessio
+                </Text>
+              </Pressable>
+            </View>
+
+            <Text style={styles.label}>
+              {exportScope === 'questionnaire' ? 'Valitse kysely' : 'Valitse sessio'}
+            </Text>
+            {loadingExportOptions ? (
+              <View style={styles.inlineLoader}>
+                <ActivityIndicator color={colors.primary} />
+              </View>
+            ) : exportOptions.length === 0 ? (
+              <Text style={styles.helpText}>
+                Ei vietäviä kohteita. Tallenna ensin vastaussessioita.
+              </Text>
+            ) : (
+              <View style={styles.optionsWrap}>
+                {exportOptions.map((value) => {
+                  const selected = selectedExportValue === value;
+                  return (
+                    <Pressable
+                      key={value}
+                      style={({ pressed }) => [
+                        styles.optionChip,
+                        selected && styles.optionChipSelected,
+                        pressed && !selected && styles.optionChipPressed,
+                      ]}
+                      onPress={() => setSelectedExportValue(value)}
+                      accessibilityRole="button"
+                      accessibilityState={{ selected }}
+                      accessibilityLabel={`Vientikohde: ${value}`}
+                    >
+                      <Text
+                        style={[
+                          styles.optionChipText,
+                          selected && styles.optionChipTextSelected,
+                        ]}
+                      >
+                        {value}
+                      </Text>
+                    </Pressable>
+                  );
+                })}
+              </View>
+            )}
+
+            <Text style={styles.label}>Tiedostomuoto</Text>
+            <View style={styles.toggleWrap}>
+              <Pressable
+                style={({ pressed }) => [
+                  styles.toggleChip,
+                  exportFormat === 'csv' && styles.toggleChipSelected,
+                  pressed && styles.toggleChipPressed,
+                ]}
+                onPress={() => setExportFormat('csv')}
+                accessibilityRole="button"
+                accessibilityLabel="Valitse tiedostomuodoksi CSV"
+              >
+                <Text
+                  style={[
+                    styles.toggleChipText,
+                    exportFormat === 'csv' && styles.toggleChipTextSelected,
+                  ]}
+                >
+                  CSV
+                </Text>
+              </Pressable>
+              <Pressable
+                style={({ pressed }) => [
+                  styles.toggleChip,
+                  exportFormat === 'xls' && styles.toggleChipSelected,
+                  pressed && styles.toggleChipPressed,
+                ]}
+                onPress={() => setExportFormat('xls')}
+                accessibilityRole="button"
+                accessibilityLabel="Valitse tiedostomuodoksi XLS"
+              >
+                <Text
+                  style={[
+                    styles.toggleChipText,
+                    exportFormat === 'xls' && styles.toggleChipTextSelected,
+                  ]}
+                >
+                  XLS
+                </Text>
+              </Pressable>
+            </View>
+
+            <Pressable
+              style={({ pressed }) => [
+                styles.primaryButton,
+                (exporting || !selectedExportValue) && styles.disabledButton,
+                pressed && !exporting && selectedExportValue && styles.primaryButtonPressed,
+              ]}
+              onPress={() => {
+                onStartExport().catch(() => undefined);
+              }}
+              disabled={exporting || !selectedExportValue}
+              accessibilityRole="button"
+              accessibilityLabel="Käynnistä tulosten vienti"
+            >
+              {exporting ? (
+                <ActivityIndicator color={colors.onPrimary} />
+              ) : (
+                <Text style={styles.primaryButtonLabel}>Lataa tulokset</Text>
+              )}
+            </Pressable>
+          </View>
         </ScrollView>
       </View>
     </ScreenContainer>
@@ -375,6 +595,74 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: colors.textPrimary,
     textAlign: 'center',
+  },
+  toggleWrap: {
+    marginTop: spacing.sm,
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.sm,
+  },
+  toggleChip: {
+    minHeight: 40,
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: colors.surfaceMuted,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: spacing.md,
+  },
+  toggleChipSelected: {
+    borderColor: colors.primary,
+    backgroundColor: colors.sampleCardBg,
+  },
+  toggleChipPressed: {
+    opacity: 0.92,
+  },
+  toggleChipText: {
+    ...typography.body,
+    color: colors.textPrimary,
+    fontWeight: '600',
+  },
+  toggleChipTextSelected: {
+    color: colors.sampleAccent,
+  },
+  inlineLoader: {
+    marginTop: spacing.md,
+    alignItems: 'flex-start',
+  },
+  optionsWrap: {
+    marginTop: spacing.md,
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.sm,
+  },
+  optionChip: {
+    minHeight: 40,
+    borderRadius: 999,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    backgroundColor: colors.surfaceMuted,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  optionChipSelected: {
+    backgroundColor: colors.sampleCardBg,
+    borderColor: colors.primary,
+  },
+  optionChipPressed: {
+    opacity: 0.92,
+  },
+  optionChipText: {
+    ...typography.body,
+    color: colors.textPrimary,
+  },
+  optionChipTextSelected: {
+    fontWeight: '700',
+    color: colors.sampleAccent,
+  },
+  disabledButton: {
+    opacity: 0.5,
   },
   successBanner: {
     padding: spacing.md,
