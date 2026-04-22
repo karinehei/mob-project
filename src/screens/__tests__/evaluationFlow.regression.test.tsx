@@ -276,4 +276,78 @@ describe('evaluation flow regressions', () => {
 
     expect(navigateMock).toHaveBeenCalledWith('BackgroundInfo');
   });
+
+  it('CATA: kayttaja voi valita useita vaihtoehtoja ja ne tallentuvat answers-rakenteeseen', async () => {
+    const state: SampleState = {
+      samples: ['451', '926'],
+      currentIndex: 0,
+    };
+
+    const nextSample = jest.fn();
+    const resetSession = jest.fn();
+
+    mockUseSampleContext.mockImplementation(() => ({
+      sessionId: 'sess-1',
+      responseSessionId: 'resp-1',
+      questionnaireTitle: 'Aistinvarainen arviointi',
+      questionnaireQuestions: [
+        {
+          id: 'appearance',
+          label: 'Ulkonäkö',
+          type: 'scale' as const,
+          minScore: 0,
+          maxScore: 10,
+        },
+        {
+          id: 'attributes',
+          label: 'Havaitut ominaisuudet',
+          type: 'multiSelect' as const,
+          options: ['makea', 'hapan', 'karvas'],
+        },
+      ],
+      samples: state.samples,
+      currentIndex: state.currentIndex,
+      currentSample: state.samples[state.currentIndex],
+      isLoading: false,
+      error: null,
+      nextSample,
+      resetSession,
+      retryLoadSession: jest.fn(async () => {}),
+    }));
+    mockSaveEvaluation.mockResolvedValue(undefined);
+
+    const navigateMock = jest.fn();
+    const { getByLabelText } = render(
+      <EvaluationScreen
+        navigation={{ navigate: navigateMock } as any}
+        route={{ key: 'Eval', name: 'Evaluation' } as any}
+      />,
+    );
+
+    fireEvent.press(getByLabelText('Ulkonäkö: arvo 8'));
+    fireEvent.press(getByLabelText('Havaitut ominaisuudet: makea'));
+    fireEvent.press(getByLabelText('Havaitut ominaisuudet: hapan'));
+    fireEvent.press(getByLabelText('Tallenna arvio'));
+
+    await waitFor(() => {
+      expect(mockSaveEvaluation).toHaveBeenCalledTimes(1);
+    });
+
+    expect(mockSaveEvaluation).toHaveBeenCalledWith(
+      expect.objectContaining({
+        sampleCode: '451',
+        sessionId: 'sess-1',
+        responseSessionId: 'resp-1',
+        questionnaireTitle: 'Aistinvarainen arviointi',
+        answers: {
+          appearance: 8,
+          attributes: ['makea', 'hapan'],
+        },
+      }),
+    );
+    expect(navigateMock).toHaveBeenCalledWith('Result', {
+      saveSucceeded: true,
+      flowCompleted: false,
+    });
+  });
 });
