@@ -29,6 +29,7 @@ function buildContext(state: SampleState) {
 
   const makeValue = () => ({
     sessionId: 'sess-1',
+    responseSessionId: 'resp-1',
     questionnaireTitle: 'Aistinvarainen arviointi',
     questionnaireQuestions: [
       {
@@ -217,5 +218,32 @@ describe('evaluation flow regressions', () => {
       routes: [{ name: 'Home' }],
     });
 
+  });
+
+  it('viimeinen nayte ohjaa taustatietoihin', async () => {
+    const state: SampleState = {
+      samples: ['451'],
+      currentIndex: 0,
+    };
+    const { makeValue } = buildContext(state);
+    mockUseSampleContext.mockImplementation(() => makeValue());
+    mockSaveEvaluation.mockResolvedValue(undefined);
+
+    const navigateMock = jest.fn();
+    const { getByLabelText } = render(
+      <EvaluationScreen
+        navigation={{ navigate: navigateMock } as any}
+        route={{ key: 'Eval', name: 'Evaluation' } as any}
+      />,
+    );
+
+    fireEvent.press(getByLabelText('Ulkonäkö: arvo 8'));
+    fireEvent.press(getByLabelText('Tallenna arvio'));
+
+    await waitFor(() => {
+      expect(mockSaveEvaluation).toHaveBeenCalledTimes(1);
+    });
+
+    expect(navigateMock).toHaveBeenCalledWith('BackgroundInfo');
   });
 });

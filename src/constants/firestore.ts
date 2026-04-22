@@ -4,6 +4,7 @@
 export const FIRESTORE_COLLECTIONS = {
   sessions: 'sessions',
   evaluations: 'evaluations',
+  respondentProfiles: 'respondentProfiles',
   samples: 'samples',
   questionnaires: 'questionnaires',
 } as const;
