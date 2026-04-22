@@ -15,7 +15,14 @@ React Native -mobiilisovelluksen kehitysrunko (tutkimus/food-study -konteksti). 
 | Laatu | ESLint (@react-native/eslint-config), Prettier |
 | Nativi | **Android** — `compileSdk` 35, `minSdk` 24, `targetSdk` 34 (ks. `android/build.gradle`) |
 
-**Huom:** Tässä repossa on vain **`android/`**-projekti. **iOS-kansiota ei ole**; `package.json`-skripti `ios` olettaisi Xcode-projektin, jota ei ole generoitu mukaan.
+## Alustatuki (prototyyppipäätös)
+
+Tämän projektin prototyyppialusta on **Android**.
+
+- Repossa on vain natiiviprojekti `android/`.
+- `ios/`-projektia ei ole alustettu tähän toimitukseen.
+- CI varmistaa vain Android debug -käännöksen.
+- `npm run ios` on tarkoituksella estetty virheilmoituksella, jotta alustarajaus näkyy heti käytössä.
 
 ## Mitä repossa on
 
@@ -63,7 +70,7 @@ npm run android
 | `npm run android` | `react-native run-android` (debug, tarvitsee Metron tai upotetun bundlen). |
 | `npm run android:wsl` | Bash: WSL-ystävällinen adb/Gradle-ympäristö + `run-android` (ks. [WSL.md](./WSL.md)). |
 | `npm run android:ci` | Bash: `assembleDebug` ilman laitetta/emulaattoria — sama polku kuin CI:ssä (`scripts/ci-assemble-debug.sh`). WSL:ssä tai Linuxissa suoraan; paikallinen SDK vaaditaan. |
-| `npm run ios` | Ei toimi ilman `ios/`-projektia tässä repossa. |
+| `npm run ios` | Pysäytetään tarkoituksella: iOS ei kuulu tämän prototyypin scopeen. |
 | `npm run lint` | ESLint. |
 | `npm run typecheck` | `tsc --noEmit`. |
 | `npm run test` | Jest. |
