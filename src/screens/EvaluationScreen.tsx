@@ -151,6 +151,7 @@ export default function EvaluationScreen({
     responseSessionId,
     questionnaireTitle,
     questionnaireQuestions,
+    samplePresentationOrder,
     isLoading,
     error,
     retryLoadSession,
@@ -273,6 +274,8 @@ export default function EvaluationScreen({
         responseSessionId,
         questionnaireTitle,
         answers: payload.answers,
+        samplePresentationOrder,
+        samplePresentationIndex: currentIndex,
       });
 
       const isLastSample = currentIndex >= samples.length - 1;

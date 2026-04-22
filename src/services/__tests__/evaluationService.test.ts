@@ -27,6 +27,8 @@ describe('saveEvaluation', () => {
       sessionId: 'sess-1',
       responseSessionId: 'resp-1',
       questionnaireTitle: 'Jogurttitesti',
+      samplePresentationOrder: ['451', '926'],
+      samplePresentationIndex: 0,
       answers: {
         appearance: 8,
         attributes: ['makea', 'hapan'],
@@ -44,6 +46,8 @@ describe('saveEvaluation', () => {
       ratingSummary: 8,
       sessionId: 'sess-1',
       responseSessionId: 'resp-1',
+      samplePresentationOrder: ['451', '926'],
+      samplePresentationIndex: 0,
       questionnaireTitle: 'Jogurttitesti',
       createdAt: { __serverTimestamp: true },
     });
@@ -55,6 +59,8 @@ describe('saveEvaluation', () => {
         sampleCode: '   ',
         sessionId: null,
         responseSessionId: 'resp-1',
+        samplePresentationOrder: ['451'],
+        samplePresentationIndex: 0,
         answers: { a: 5 },
       }),
     ).rejects.toThrow('Näytekoodi');
@@ -66,6 +72,8 @@ describe('saveEvaluation', () => {
         sampleCode: '1',
         sessionId: null,
         responseSessionId: 'resp-1',
+        samplePresentationOrder: ['1'],
+        samplePresentationIndex: 0,
         answers: {},
       }),
     ).rejects.toThrow('Vastaukset');
@@ -77,9 +85,37 @@ describe('saveEvaluation', () => {
         sampleCode: '1',
         sessionId: null,
         responseSessionId: ' ',
+        samplePresentationOrder: ['1'],
+        samplePresentationIndex: 0,
         answers: { a: 3 },
       }),
     ).rejects.toThrow('Vastaussession');
+  });
+
+  it('rejects missing presentation order', async () => {
+    await expect(
+      saveEvaluation({
+        sampleCode: '1',
+        sessionId: null,
+        responseSessionId: 'resp-1',
+        samplePresentationOrder: [],
+        samplePresentationIndex: 0,
+        answers: { a: 3 },
+      }),
+    ).rejects.toThrow('esitysjärjestys');
+  });
+
+  it('rejects invalid presentation index', async () => {
+    await expect(
+      saveEvaluation({
+        sampleCode: '1',
+        sessionId: null,
+        responseSessionId: 'resp-1',
+        samplePresentationOrder: ['451'],
+        samplePresentationIndex: 2,
+        answers: { a: 3 },
+      }),
+    ).rejects.toThrow('järjestysindeksi');
   });
 });
 

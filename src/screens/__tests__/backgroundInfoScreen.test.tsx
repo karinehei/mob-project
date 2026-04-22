@@ -28,6 +28,7 @@ describe('BackgroundInfoScreen', () => {
       questionnaireTitle: 'Aistinvarainen arviointi',
       questionnaireQuestions: [],
       samples: [],
+      samplePresentationOrder: [],
       currentIndex: 0,
       currentSample: null,
       isLoading: false,

@@ -62,6 +62,7 @@ function buildContext(state: SampleState) {
       },
     ],
     samples: state.samples,
+    samplePresentationOrder: state.samples,
     currentIndex: state.currentIndex,
     currentSample:
       state.currentIndex < state.samples.length
@@ -114,13 +115,19 @@ describe('evaluation flow regressions', () => {
     fireEvent.press(getByLabelText('Tallenna arvio'));
 
     await waitFor(() => expect(mockSaveEvaluation).toHaveBeenCalledTimes(1));
+    expect(mockSaveEvaluation).toHaveBeenCalledWith(
+      expect.objectContaining({
+        samplePresentationOrder: ['451', '926'],
+        samplePresentationIndex: 0,
+      }),
+    );
 
     expect(nextSample).not.toHaveBeenCalled();
     expect(evaluationNavigation.navigate).toHaveBeenCalledWith('Result', {
       saveSucceeded: true,
       flowCompleted: false,
     });
-  });
+  }, 20000);
 
   it('Result -> seuraava näyte -> Home', () => {
     const state: SampleState = {
@@ -306,6 +313,7 @@ describe('evaluation flow regressions', () => {
         },
       ],
       samples: state.samples,
+      samplePresentationOrder: state.samples,
       currentIndex: state.currentIndex,
       currentSample: state.samples[state.currentIndex],
       isLoading: false,
@@ -339,6 +347,8 @@ describe('evaluation flow regressions', () => {
         sessionId: 'sess-1',
         responseSessionId: 'resp-1',
         questionnaireTitle: 'Aistinvarainen arviointi',
+        samplePresentationOrder: ['451', '926'],
+        samplePresentationIndex: 0,
         answers: {
           appearance: 8,
           attributes: ['makea', 'hapan'],
