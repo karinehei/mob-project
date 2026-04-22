@@ -13,6 +13,7 @@ import type { EvaluationAnswer } from '../types/evaluation';
 export type SaveEvaluationInput = {
   sampleCode: string;
   sessionId: string | null;
+  responseSessionId: string;
   answers: Record<string, EvaluationAnswer>;
   questionnaireTitle?: string | null;
 };
@@ -37,6 +38,9 @@ export async function saveEvaluation(
   if (answerKeys.length === 0) {
     throw new Error('Vastaukset puuttuvat.');
   }
+  if (!input.responseSessionId.trim()) {
+    throw new Error('Vastaussession tunniste puuttuu.');
+  }
 
   try {
     const db = getFirestoreDb();
@@ -57,6 +61,7 @@ export async function saveEvaluation(
       rating: ratingSummary,
       ratingSummary,
       sessionId: input.sessionId,
+      responseSessionId: input.responseSessionId,
       questionnaireTitle: input.questionnaireTitle ?? null,
       createdAt: serverTimestamp(),
     });
