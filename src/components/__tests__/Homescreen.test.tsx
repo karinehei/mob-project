@@ -7,6 +7,7 @@ jest.mock('../../context/SampleContext', () => ({
     currentSample: '420',
     isLoading: false,
     error: null,
+    updateStatusMessage: null,
     sessionId: 'test-session',
     responseSessionId: 'resp-1',
     questionnaireTitle: 'Aistinvarainen arviointi',
@@ -18,7 +19,7 @@ jest.mock('../../context/SampleContext', () => ({
     currentIndex: 0,
     nextSample: jest.fn(),
     retryLoadSession: jest.fn(async () => {}),
-    resetSession: jest.fn(),
+    resetSession: jest.fn(async () => {}),
   }),
 }));
 

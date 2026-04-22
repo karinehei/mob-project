@@ -49,9 +49,10 @@ describe('AdminScreen', () => {
       currentSample: null,
       isLoading: false,
       error: null,
+      updateStatusMessage: null,
       nextSample: jest.fn(),
       retryLoadSession: jest.fn(async () => {}),
-      resetSession: jest.fn(),
+      resetSession: jest.fn(async () => {}),
     });
     mockSaveQuestionnaire.mockResolvedValue('q-1');
     mockGetResultExportOptions.mockResolvedValue({
