@@ -1,23 +1,51 @@
 /**
- * Semantic color tokens. Tune with final brand / design system.
+ * Semantic color tokens for Enhanced Cream Harmony.
  */
 export const colors = {
-  background: '#FFFFFF',
-  surface: '#F5F5F5',
-  surfaceMuted: '#F3F4F6',
-  textPrimary: '#111111',
-  textSecondary: '#666666',
-  textMuted: '#9CA3AF',
-  border: '#E5E7EB',
-  /** Primary actions / accents (study shell, Figma-aligned) */
-  primary: '#5D5CFF',
+  // Backgrounds
+  background: '#FAF3E0',
+  surface: '#FFFFFF',
+  surfaceMuted: '#F4EFE6',
+
+  // Text & Interactions
+  primary: '#1C2520',
   onPrimary: '#FFFFFF',
-  appBar: '#1A2332',
-  onAppBar: '#FFFFFF',
-  sampleCardBg: '#E8EDFF',
-  sampleAccent: '#1E3A5F',
-  ratingSelectedBg: '#EEF2FF',
-  ratingSelectedBorder: '#5D5CFF',
+  textPrimary: '#1C2520',
+  textSecondary: '#3A4540',
+  textMuted: '#6B7280',
+
+  // Borders
+  border: '#DED9CE',
+  borderMuted: '#D3DCD8',
+
+  // Custom Overrides
+  appBar: '#F4EFE6',
+  onAppBar: '#1C2520',
+  sampleCardBg: '#FFFFFF',
+  sampleAccent: '#1C2520',
+  ratingSelectedBg: '#1C2520',
+  ratingSelectedBorder: '#1C2520',
+
+  // Status
+  success: '#10B981',
+  error: '#EF4444',
 } as const;
 
 export type ColorName = keyof typeof colors;
+
+export const shadows = {
+  card: {
+    shadowColor: '#1C2520',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.12,
+    shadowRadius: 20,
+    elevation: 8,
+  },
+  button: {
+    shadowColor: '#1C2520',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+};

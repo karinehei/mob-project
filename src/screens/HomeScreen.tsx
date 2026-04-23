@@ -12,7 +12,7 @@ import { useTranslation } from 'react-i18next';
 
 import { ScreenContainer } from '../components/ScreenContainer';
 import { StudyAppBar } from '../components/StudyAppBar';
-import { colors } from '../theme/colors';
+import { colors, shadows } from '../theme/colors';
 import { spacing } from '../theme/spacing';
 import { typography } from '../theme/typography';
 import { useSampleContext } from '../context/SampleContext';
@@ -157,9 +157,12 @@ export default function HomeScreen({ navigation }: Props): React.JSX.Element {
           </Pressable>
 
           <View style={styles.questionnaireCard}>
-            <Text style={styles.questionnaireCardTitle}>
-              {t('home.active_questionnaire')}
-            </Text>
+            <View style={styles.cardHeaderRow}>
+              <View style={styles.statusDot} />
+              <Text style={styles.questionnaireCardTitle}>
+                {t('home.active_questionnaire')}
+              </Text>
+            </View>
             <Text style={styles.questionnaireCardBody}>
               {t('home.questionnaire_stats', {
                 sampleCount: samples.length,
@@ -243,13 +246,11 @@ const styles = StyleSheet.create({
   sampleCard: {
     marginTop: spacing.lg,
     padding: spacing.lg,
-    borderRadius: 16,
-    backgroundColor: colors.sampleCardBg,
-    shadowColor: colors.primary,
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.12,
-    shadowRadius: 10,
-    elevation: 5,
+    borderRadius: 24,
+    backgroundColor: colors.surface,
+    borderWidth: 3,
+    borderColor: colors.primary,
+    ...shadows.card,
   },
   sampleLabel: {
     ...typography.caption,
@@ -258,10 +259,11 @@ const styles = StyleSheet.create({
   },
   sampleCode: {
     marginTop: spacing.sm,
-    fontSize: 36,
-    lineHeight: 42,
+    fontSize: 64,
+    lineHeight: 70,
     fontWeight: '700',
-    color: colors.sampleAccent,
+    letterSpacing: -1.5,
+    color: colors.textPrimary,
   },
   instruction: {
     marginTop: spacing.lg,
@@ -284,10 +286,9 @@ const styles = StyleSheet.create({
   questionnaireCard: {
     marginTop: spacing.lg,
     padding: spacing.lg,
-    borderRadius: 16,
-    backgroundColor: colors.background,
-    borderWidth: 1,
-    borderColor: colors.border,
+    borderRadius: 20,
+    backgroundColor: colors.surface,
+    ...shadows.card,
   },
   noticeBanner: {
     marginTop: spacing.md,
@@ -349,21 +350,17 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.lg,
     paddingTop: spacing.md,
     paddingBottom: spacing.lg,
-    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopWidth: 1.5,
     borderTopColor: colors.border,
     backgroundColor: colors.background,
   },
   cta: {
     borderRadius: 999,
-    paddingVertical: spacing.md + 2,
+    minHeight: 60,
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: colors.primary,
-    shadowColor: colors.primary,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.25,
-    shadowRadius: 8,
-    elevation: 5,
+    ...shadows.button,
   },
   secondaryCta: {
     marginTop: spacing.md,
@@ -371,9 +368,10 @@ const styles = StyleSheet.create({
     borderRadius: 999,
     paddingVertical: spacing.sm,
     paddingHorizontal: spacing.md,
-    backgroundColor: colors.surfaceMuted,
-    borderWidth: 1,
+    backgroundColor: colors.surface,
+    borderWidth: 1.5,
     borderColor: colors.border,
+    ...shadows.button,
   },
   secondaryCtaPressed: {
     opacity: 0.9,
@@ -435,5 +433,16 @@ const styles = StyleSheet.create({
     ...typography.body,
     fontWeight: '600',
     color: colors.textPrimary,
+  },
+  cardHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+  },
+  statusDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: colors.success,
   },
 });

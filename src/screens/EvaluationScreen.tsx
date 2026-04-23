@@ -15,7 +15,7 @@ import { StudyAppBar } from '../components/StudyAppBar';
 import { useSampleContext } from '../context/SampleContext';
 import { RootStackParamList } from '../navigation/AppNavigator';
 import { saveEvaluation } from '../services/evaluationService';
-import { colors } from '../theme/colors';
+import { colors, shadows } from '../theme/colors';
 import { spacing } from '../theme/spacing';
 import { typography } from '../theme/typography';
 import {
@@ -61,11 +61,10 @@ function ScaleQuestion({
     <View style={styles.questionCard}>
       <Text style={styles.questionTitle}>{question.label}</Text>
       <Text style={styles.scaleLegend}>
-        {minScore} = {t('eval_screen.min_val')}
-        {'\n'}
-        {maxScore} = {t('eval_screen.max_val')}
+        {minScore} = {t('eval_screen.min_val')}, {maxScore} ={' '}
+        {t('eval_screen.max_val')}
       </Text>
-      <View style={styles.optionsWrap}>
+      <View style={styles.scaleGrid}>
         {values.map((optionValue) => {
           const selected = value === optionValue;
           return (
@@ -131,6 +130,11 @@ function MultiSelectQuestion({
                 option,
               })}
             >
+              <View
+                style={[styles.checkbox, selected && styles.checkboxSelected]}
+              >
+                {selected && <View style={styles.checkmark} />}
+              </View>
               <Text
                 style={[
                   styles.optionChipText,
@@ -215,8 +219,7 @@ export default function EvaluationScreen({
       <ScreenContainer testID="screen-evaluation">
         <StudyAppBar />
         <View style={styles.centerContainer}>
-          <Text style={styles.infoText}>{t('eval_screen.no_sample')}</Text>{' '}
-          {/* TRANSLATED */}
+          <Text style={styles.infoText}>{t('eval_screen.no_sample')}</Text>
           <Pressable
             onPress={() => navigation.navigate('Home')}
             style={({ pressed }) => [
@@ -321,18 +324,12 @@ export default function EvaluationScreen({
         >
           <Text style={styles.pageTitle}>{t('eval_screen.title')}</Text>
 
-          <Text style={styles.lead}>{t('eval_screen.lead')}</Text>
-
-          <View style={styles.infoCard}>
-            <Text style={styles.infoTitle}>
-              {t('eval_screen.session')} {sessionId ?? '—'}
-            </Text>
-            <Text style={styles.infoBody}>
-              {t('eval_screen.sample')} {currentSample ?? '—'}
-              {'\n'}
-              {t('eval_screen.questionnaire')} {questionnaireTitle}
-              {'\n'}
-              {t('eval_screen.questions_count')} {questionnaireQuestions.length}
+          <View style={styles.progressPill}>
+            <Text style={styles.progressText}>
+              {t('eval_screen.progress', {
+                current: currentIndex + 1,
+                total: samples.length,
+              })}
             </Text>
           </View>
 
@@ -410,64 +407,135 @@ export default function EvaluationScreen({
 }
 
 const styles = StyleSheet.create({
-  root: {
-    flex: 1,
-  },
-  scroll: {
-    flex: 1,
-  },
+  root: { flex: 1 },
+  scroll: { flex: 1 },
   scrollContent: {
     paddingHorizontal: spacing.lg,
     paddingTop: spacing.lg,
     paddingBottom: spacing.xl,
   },
   pageTitle: {
-    fontSize: 24,
-    lineHeight: 30,
-    fontWeight: '700',
+    ...typography.title,
     color: colors.textPrimary,
   },
-  lead: {
-    marginTop: spacing.sm,
-    ...typography.body,
-    color: colors.textSecondary,
+  progressPill: {
+    marginTop: spacing.md,
+    alignSelf: 'flex-start',
+    paddingVertical: spacing.xs + 4,
+    paddingHorizontal: spacing.md,
+    backgroundColor: colors.surfaceMuted,
+    borderRadius: 16,
+    borderWidth: 1.5,
+    borderColor: colors.border,
+  },
+  progressText: {
+    ...typography.caption,
+    fontWeight: '700',
+    color: colors.textPrimary,
   },
   questionCard: {
-    marginTop: spacing.md,
-    padding: spacing.lg,
-    borderRadius: 16,
-    backgroundColor: colors.background,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  questionTitle: {
-    ...typography.body,
-    fontWeight: '700',
-    color: colors.textPrimary,
-  },
-  infoCard: {
     marginTop: spacing.lg,
     padding: spacing.lg,
-    borderRadius: 16,
-    backgroundColor: colors.background,
-    borderWidth: 1,
-    borderColor: colors.border,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.06,
-    shadowRadius: 6,
-    elevation: 2,
+    borderRadius: 20,
+    backgroundColor: colors.surface,
+    ...shadows.card,
   },
-  infoTitle: {
-    ...typography.body,
-    fontWeight: '700',
+  questionTitle: {
+    ...typography.h2,
     color: colors.textPrimary,
   },
-  infoBody: {
-    marginTop: spacing.sm,
-    ...typography.body,
+  scaleLegend: {
+    marginTop: spacing.xs,
+    ...typography.caption,
     color: colors.textSecondary,
-    lineHeight: 22,
+  },
+  helpText: {
+    marginTop: spacing.xs,
+    ...typography.caption,
+    color: colors.textSecondary,
+  },
+  scaleGrid: {
+    marginTop: spacing.md,
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    gap: spacing.sm,
+  },
+  scaleChip: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.surface,
+    borderWidth: 1.5,
+    borderColor: colors.borderMuted,
+  },
+  scaleChipSelected: {
+    backgroundColor: colors.primary,
+    borderColor: colors.primary,
+    ...shadows.button,
+  },
+  scaleChipPressed: { opacity: 0.8 },
+  scaleChipText: {
+    ...typography.body,
+    fontWeight: '600',
+    color: colors.textPrimary,
+  },
+  scaleChipTextSelected: {
+    color: colors.onPrimary,
+  },
+  optionsWrap: {
+    marginTop: spacing.md,
+    flexDirection: 'column',
+    gap: spacing.md,
+  },
+  optionChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    minHeight: 52,
+    borderRadius: 16,
+    paddingHorizontal: spacing.md,
+    backgroundColor: colors.surface,
+    borderWidth: 1.5,
+    borderColor: colors.borderMuted,
+  },
+  optionChipSelected: {
+    backgroundColor: colors.surfaceMuted,
+    borderColor: colors.primary,
+    borderWidth: 2.5,
+    ...shadows.button,
+  },
+  optionChipPressed: { opacity: 0.9 },
+  checkbox: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    borderWidth: 1.5,
+    borderColor: colors.borderMuted,
+    marginRight: spacing.md,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  checkboxSelected: {
+    backgroundColor: colors.primary,
+    borderColor: colors.primary,
+    borderWidth: 0,
+  },
+  checkmark: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: colors.onPrimary,
+  },
+  optionChipText: {
+    ...typography.body,
+    fontWeight: '600',
+    color: colors.textSecondary,
+  },
+  optionChipTextSelected: {
+    color: colors.textPrimary,
+    fontWeight: '700',
   },
   errorBanner: {
     marginTop: spacing.md,
@@ -475,110 +543,33 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     backgroundColor: colors.surfaceMuted,
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: colors.error,
   },
   errorText: {
     ...typography.body,
-    color: colors.textPrimary,
-  },
-  scaleLegend: {
-    marginTop: spacing.sm,
-    ...typography.caption,
-    color: colors.textMuted,
-    lineHeight: 18,
-  },
-  helpText: {
-    marginTop: spacing.sm,
-    ...typography.caption,
-    color: colors.textMuted,
-  },
-  optionsWrap: {
-    marginTop: spacing.md,
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: spacing.sm,
-  },
-  scaleChip: {
-    minWidth: 44,
-    minHeight: 44,
-    paddingHorizontal: spacing.sm,
-    borderRadius: 999,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: colors.surfaceMuted,
-  },
-  scaleChipSelected: {
-    backgroundColor: colors.ratingSelectedBg,
-    borderWidth: 2,
-    borderColor: colors.ratingSelectedBorder,
-  },
-  scaleChipPressed: {
-    opacity: 0.92,
-  },
-  scaleChipText: {
-    ...typography.body,
-    fontWeight: '600',
-    color: colors.textPrimary,
-  },
-  scaleChipTextSelected: {
-    color: colors.sampleAccent,
-  },
-  optionChip: {
-    minHeight: 44,
-    borderRadius: 999,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-    backgroundColor: colors.surfaceMuted,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  optionChipSelected: {
-    backgroundColor: colors.sampleCardBg,
-    borderColor: colors.primary,
-  },
-  optionChipPressed: {
-    opacity: 0.92,
-  },
-  optionChipText: {
-    ...typography.body,
-    color: colors.textPrimary,
-  },
-  optionChipTextSelected: {
-    fontWeight: '700',
-    color: colors.sampleAccent,
+    color: colors.error,
   },
   footer: {
     paddingHorizontal: spacing.lg,
     paddingTop: spacing.md,
     paddingBottom: spacing.lg,
-    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopWidth: 1.5,
     borderTopColor: colors.border,
     backgroundColor: colors.background,
   },
   cta: {
     borderRadius: 999,
-    paddingVertical: spacing.md + 2,
+    minHeight: 60,
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: colors.primary,
-    minHeight: 48,
-    shadowColor: colors.primary,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.25,
-    shadowRadius: 8,
-    elevation: 5,
+    ...shadows.button,
   },
-  ctaDisabled: {
-    opacity: 0.5,
-  },
-  ctaPressed: {
-    opacity: 0.9,
-  },
+  ctaDisabled: { opacity: 0.5 },
+  ctaPressed: { opacity: 0.9 },
   ctaLabel: {
-    ...typography.body,
-    fontWeight: '700',
+    ...typography.button,
     color: colors.onPrimary,
-    letterSpacing: 0.3,
   },
   centerContainer: {
     flex: 1,
@@ -599,9 +590,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.lg,
     backgroundColor: colors.primary,
   },
-  retryButtonPressed: {
-    opacity: 0.9,
-  },
+  retryButtonPressed: { opacity: 0.9 },
   retryButtonLabel: {
     ...typography.body,
     fontWeight: '700',

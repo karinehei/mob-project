@@ -100,6 +100,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm + 2,
     backgroundColor: colors.appBar,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
   },
   appBarIconHit: {
     width: 44,
@@ -110,19 +112,20 @@ const styles = StyleSheet.create({
   menuIcon: {
     justifyContent: 'space-between',
     height: 14,
-    width: 20,
+    width: 22,
   },
   menuBar: {
-    height: 2,
+    height: 3,
     borderRadius: 1,
     backgroundColor: colors.onAppBar,
   },
   appBarTitle: {
     flex: 1,
     textAlign: 'center',
-    ...typography.body,
+    ...typography.h2,
     fontWeight: '700',
     color: colors.onAppBar,
+    letterSpacing: 0.5,
   },
   languageToggle: {
     width: 78,
@@ -135,7 +138,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: 999,
-    borderWidth: 1,
+    borderWidth: 1.5,
     borderColor: colors.onAppBar,
     backgroundColor: 'transparent',
   },

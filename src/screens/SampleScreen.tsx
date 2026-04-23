@@ -14,15 +14,12 @@ import { ScreenContainer } from '../components/ScreenContainer';
 import { StudyAppBar } from '../components/StudyAppBar';
 import { useSampleContext } from '../context/SampleContext';
 import { RootStackParamList } from '../navigation/AppNavigator';
-import { colors } from '../theme/colors';
+import { colors, shadows } from '../theme/colors';
 import { spacing } from '../theme/spacing';
 import { typography } from '../theme/typography';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Sample'>;
 
-/**
- * Välinäkymä ennen arviointia - sama rakenne ja visuaalinen kieli kuin etusivulla.
- */
 export default function SampleScreen({ navigation }: Props): React.JSX.Element {
   const { t } = useTranslation();
   const { currentSample, isLoading, error, retryLoadSession } =
@@ -47,7 +44,9 @@ export default function SampleScreen({ navigation }: Props): React.JSX.Element {
         <View style={styles.centerContainer}>
           <Text style={styles.infoText}>{error}</Text>
           <Pressable
-            onPress={async () => await retryLoadSession()}
+            onPress={async () => {
+              await retryLoadSession();
+            }}
             style={({ pressed }) => [
               styles.retryButton,
               pressed && styles.retryButtonPressed,
@@ -69,7 +68,9 @@ export default function SampleScreen({ navigation }: Props): React.JSX.Element {
         <View style={styles.centerContainer}>
           <Text style={styles.infoText}>{t('sample_screen.no_active')}</Text>
           <Pressable
-            onPress={async () => await retryLoadSession()}
+            onPress={async () => {
+              await retryLoadSession();
+            }}
             style={({ pressed }) => [
               styles.retryButton,
               pressed && styles.retryButtonPressed,
@@ -144,91 +145,77 @@ const styles = StyleSheet.create({
     paddingBottom: spacing.xl,
   },
   pageTitle: {
-    fontSize: 24,
-    lineHeight: 30,
-    fontWeight: '700',
+    ...typography.title,
     color: colors.textPrimary,
   },
   sampleCard: {
     marginTop: spacing.lg,
     padding: spacing.lg,
-    borderRadius: 16,
-    backgroundColor: colors.sampleCardBg,
-    shadowColor: colors.primary,
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.12,
-    shadowRadius: 10,
-    elevation: 5,
+    borderRadius: 24,
+    backgroundColor: colors.surface,
+    borderWidth: 3,
+    borderColor: colors.primary,
+    ...shadows.card,
   },
   sampleLabel: {
     ...typography.caption,
-    fontWeight: '600',
-    color: colors.sampleAccent,
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+    color: colors.textSecondary,
   },
   sampleCode: {
     marginTop: spacing.sm,
-    fontSize: 36,
-    lineHeight: 42,
+    fontSize: 56,
+    lineHeight: 64,
     fontWeight: '700',
-    color: colors.sampleAccent,
+    letterSpacing: -1,
+    color: colors.textPrimary,
   },
   instruction: {
-    marginTop: spacing.lg,
+    marginTop: spacing.xl,
     ...typography.body,
     color: colors.textSecondary,
+    lineHeight: 24,
   },
   infoCard: {
     marginTop: spacing.md,
     padding: spacing.lg,
-    borderRadius: 16,
-    backgroundColor: colors.background,
-    borderWidth: 1,
-    borderColor: colors.border,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.06,
-    shadowRadius: 6,
-    elevation: 2,
+    borderRadius: 20,
+    backgroundColor: colors.surface,
+    ...shadows.card,
   },
   infoTitle: {
-    ...typography.body,
-    fontWeight: '700',
+    ...typography.h2,
     color: colors.textPrimary,
   },
   infoBody: {
     marginTop: spacing.sm,
     ...typography.body,
     color: colors.textSecondary,
-    lineHeight: 22,
+    lineHeight: 24,
   },
   footer: {
     paddingHorizontal: spacing.lg,
     paddingTop: spacing.md,
     paddingBottom: spacing.lg,
-    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopWidth: 1.5,
     borderTopColor: colors.border,
     backgroundColor: colors.background,
   },
   cta: {
     borderRadius: 999,
-    paddingVertical: spacing.md + 2,
+    minHeight: 60,
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: colors.primary,
-    shadowColor: colors.primary,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.25,
-    shadowRadius: 8,
-    elevation: 5,
+    ...shadows.button,
   },
   ctaPressed: {
     opacity: 0.9,
   },
   ctaLabel: {
-    ...typography.body,
-    fontWeight: '700',
+    ...typography.button,
     color: colors.onPrimary,
-    letterSpacing: 0.3,
   },
   centerContainer: {
     flex: 1,
