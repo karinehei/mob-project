@@ -16,7 +16,9 @@
   },
   "appBar": {
     "title": "Food_Study",
-    "menu_accessibility": "Valikko"
+    "menu_accessibility": "Valikko",
+    "switch_to_finnish": "Vaihda suomeksi",
+    "switch_to_english": "Vaihda englanniksi"
   },
   "home": {
     "open_admin": "Avaa kyselyn hallinta",
@@ -59,7 +61,9 @@
     "questionnaire": "Kysely:",
     "questions_count": "Kysymyksiä:",
     "save_aria": "Tallenna arvio",
-    "save_and_continue": "Tallenna ja jatka"
+    "save_and_continue": "Tallenna ja jatka",
+    "scale_value_aria": "{{question}}: arvo {{value}}",
+    "option_aria": "{{question}}: {{option}}"
   },
   "result_screen": {
     "new_round": "Aloita uusi kierros",
