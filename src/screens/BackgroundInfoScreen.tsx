@@ -9,6 +9,7 @@ import {
   View,
 } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { useTranslation } from 'react-i18next';
 
 import { ScreenContainer } from '../components/ScreenContainer';
 import { StudyAppBar } from '../components/StudyAppBar';
@@ -21,44 +22,53 @@ import { typography } from '../theme/typography';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'BackgroundInfo'>;
 
-const GENDER_OPTIONS = ['Nainen', 'Mies', 'Muu', 'En halua kertoa'] as const;
-
-function saveErrorMessage(error: unknown): string {
-  if (error instanceof Error && error.message) {
-    return error.message;
-  }
-  return 'Taustatietojen tallennus epäonnistui.';
-}
+const GENDER_OPTIONS = [
+  'female',
+  'male',
+  'other',
+  'prefer_not_to_say',
+] as const;
 
 export default function BackgroundInfoScreen({
   navigation,
 }: Props): React.JSX.Element {
-  const { sessionId, responseSessionId, questionnaireTitle } = useSampleContext();
+  const { t } = useTranslation();
+  const { sessionId, responseSessionId, questionnaireTitle } =
+    useSampleContext();
   const [ageText, setAgeText] = useState('');
-  const [gender, setGender] = useState('');
+  const [genderKey, setGenderKey] = useState('');
   const [saveError, setSaveError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+
+  function saveErrorMessage(error: unknown): string {
+    if (error instanceof Error && error.message) {
+      return error.message;
+    }
+    return t('background_info.save_error_fallback');
+  }
 
   const onSubmit = async () => {
     const age = Number(ageText.trim());
     if (!Number.isInteger(age) || age < 10 || age > 120) {
-      setSaveError('Anna ika kokonaislukuna valilta 10-120.');
+      setSaveError(t('background_info.error_age'));
       return;
     }
-    if (!gender) {
-      setSaveError('Valitse sukupuoli.');
+    if (!genderKey) {
+      setSaveError(t('background_info.error_gender'));
       return;
     }
 
     setSaveError(null);
     setSaving(true);
     try {
+      const translatedGender = t(`background_info.gender_${genderKey}`);
+
       await saveResponseSession({
         sessionId,
         responseSessionId,
         questionnaireTitle,
         age,
-        gender,
+        gender: translatedGender,
       });
 
       navigation.navigate('Result', {
@@ -82,31 +92,35 @@ export default function BackgroundInfoScreen({
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
-          <Text style={styles.pageTitle}>Taustatiedot</Text>
-          <Text style={styles.lead}>
-            Vastaa lopuksi pakollisiin taustatietoihin.
-          </Text>
+          <Text style={styles.pageTitle}>{t('background_info.title')}</Text>
+          <Text style={styles.lead}>{t('background_info.lead')}</Text>
 
           <View style={styles.card}>
-            <Text style={styles.label}>Ika (pakollinen)</Text>
+            <Text style={styles.label}>{t('background_info.label_age')}</Text>
             <TextInput
               value={ageText}
               onChangeText={setAgeText}
               keyboardType="number-pad"
-              placeholder="esim. 34"
+              placeholder={t('background_info.placeholder_age')}
               placeholderTextColor={colors.textMuted}
               style={styles.input}
-              accessibilityLabel="Ika"
+              accessibilityLabel={t('background_info.label_age')}
             />
 
-            <Text style={styles.label}>Sukupuoli (pakollinen)</Text>
+            <Text style={styles.label}>
+              {t('background_info.label_gender')}
+            </Text>
             <View style={styles.optionsWrap}>
-              {GENDER_OPTIONS.map((option) => {
-                const selected = gender === option;
+              {GENDER_OPTIONS.map((optionKey) => {
+                const selected = genderKey === optionKey;
+                const translatedLabel = t(
+                  `background_info.gender_${optionKey}`,
+                );
+
                 return (
                   <Pressable
-                    key={option}
-                    onPress={() => setGender(option)}
+                    key={optionKey}
+                    onPress={() => setGenderKey(optionKey)}
                     style={({ pressed }) => [
                       styles.optionChip,
                       selected && styles.optionChipSelected,
@@ -114,7 +128,9 @@ export default function BackgroundInfoScreen({
                     ]}
                     accessibilityRole="button"
                     accessibilityState={{ selected }}
-                    accessibilityLabel={`Sukupuoli: ${option}`}
+                    accessibilityLabel={t('background_info.gender_aria', {
+                      option: translatedLabel,
+                    })}
                   >
                     <Text
                       style={[
@@ -122,7 +138,7 @@ export default function BackgroundInfoScreen({
                         selected && styles.optionChipTextSelected,
                       ]}
                     >
-                      {option}
+                      {translatedLabel}
                     </Text>
                   </Pressable>
                 );
@@ -146,12 +162,14 @@ export default function BackgroundInfoScreen({
             onPress={onSubmit}
             disabled={saving}
             accessibilityRole="button"
-            accessibilityLabel="Tallenna taustatiedot"
+            accessibilityLabel={t('background_info.save_button')}
           >
             {saving ? (
               <ActivityIndicator color={colors.onPrimary} />
             ) : (
-              <Text style={styles.ctaLabel}>Tallenna taustatiedot</Text>
+              <Text style={styles.ctaLabel}>
+                {t('background_info.save_button')}
+              </Text>
             )}
           </Pressable>
         </View>

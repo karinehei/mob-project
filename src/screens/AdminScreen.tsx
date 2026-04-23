@@ -11,6 +11,7 @@ import {
   View,
 } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { useTranslation } from 'react-i18next';
 
 import { ScreenContainer } from '../components/ScreenContainer';
 import { StudyAppBar } from '../components/StudyAppBar';
@@ -38,25 +39,28 @@ const IMPORT_PLACEHOLDER = `{
   ]
 }`;
 
-function getErrorMessage(error: unknown): string {
-  if (error instanceof Error && error.message) {
-    return error.message;
-  }
-  return 'Kyselyn tallennus epäonnistui. Tarkista tiedot ja yritä uudelleen.';
-}
-
 export default function AdminScreen({ navigation }: Props): React.JSX.Element {
+  const { t } = useTranslation();
   const { retryLoadSession } = useSampleContext();
+
+  function getErrorMessage(error: unknown): string {
+    if (error instanceof Error && error.message) {
+      return error.message;
+    }
+    return t('admin_screen.save_error_fallback');
+  }
 
   const [title, setTitle] = useState('');
   const [samplesText, setSamplesText] = useState('');
   const [scaleQuestionsText, setScaleQuestionsText] = useState(
-    'Ulkonäkö\nTuoksu\nMaku\nRakenne',
+    t('admin_screen.default_scale_questions'),
   );
   const [cataQuestionLabel, setCataQuestionLabel] = useState(
-    'Mitkä ominaisuudet tunnistit?',
+    t('admin_screen.default_cata_label'),
   );
-  const [cataOptionsText, setCataOptionsText] = useState('makea, hapan, pehmeä');
+  const [cataOptionsText, setCataOptionsText] = useState(
+    t('admin_screen.default_cata_options'),
+  );
   const [importText, setImportText] = useState('');
   const [saving, setSaving] = useState(false);
   const [loadingExportOptions, setLoadingExportOptions] = useState(false);
@@ -83,7 +87,13 @@ export default function AdminScreen({ navigation }: Props): React.JSX.Element {
     } catch {
       return null;
     }
-  }, [title, samplesText, scaleQuestionsText, cataQuestionLabel, cataOptionsText]);
+  }, [
+    title,
+    samplesText,
+    scaleQuestionsText,
+    cataQuestionLabel,
+    cataOptionsText,
+  ]);
 
   const exportOptions = exportScope === 'questionnaire' ? questionnaireOptions : sessionOptions;
 
@@ -134,7 +144,7 @@ export default function AdminScreen({ navigation }: Props): React.JSX.Element {
 
       const questionnaireId = await saveQuestionnaire(draft);
       await retryLoadSession();
-      setStatusMessage(`Kysely tallennettu aktiiviseksi (${questionnaireId}).`);
+      setStatusMessage(t('admin_screen.save_success', { id: questionnaireId }));
       navigation.navigate('Home');
     } catch (error) {
       setErrorMessage(getErrorMessage(error));
@@ -179,11 +189,8 @@ export default function AdminScreen({ navigation }: Props): React.JSX.Element {
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
-          <Text style={styles.pageTitle}>Kyselyn hallinta</Text>
-          <Text style={styles.lead}>
-            Luo uusi aktiivinen kysely tai tuo valmis JSON-rakenne ilman
-            suoraa Firestore-muokkausta.
-          </Text>
+          <Text style={styles.pageTitle}>{t('admin_screen.title')}</Text>
+          <Text style={styles.lead}>{t('admin_screen.lead')}</Text>
 
           {statusMessage ? (
             <View style={styles.successBanner}>
@@ -198,68 +205,79 @@ export default function AdminScreen({ navigation }: Props): React.JSX.Element {
           ) : null}
 
           <View style={styles.card}>
-            <Text style={styles.cardTitle}>Luo kysely käsin</Text>
+            <Text style={styles.cardTitle}>
+              {t('admin_screen.create_manual_title')}
+            </Text>
 
-            <Text style={styles.label}>Kyselyn nimi</Text>
+            <Text style={styles.label}>{t('admin_screen.label_name')}</Text>
             <TextInput
               value={title}
               onChangeText={setTitle}
-              placeholder="Esim. Jogurttien aistinvarainen arviointi"
+              placeholder={t('admin_screen.placeholder_name')}
               placeholderTextColor={colors.textMuted}
               style={styles.input}
-              accessibilityLabel="Kyselyn nimi"
+              accessibilityLabel={t('admin_screen.label_name')}
             />
 
-            <Text style={styles.label}>Näytekoodit</Text>
+            <Text style={styles.label}>{t('admin_screen.label_samples')}</Text>
             <TextInput
               value={samplesText}
               onChangeText={setSamplesText}
-              placeholder="451, 926, 780"
+              placeholder={t('admin_screen.placeholder_samples')}
               placeholderTextColor={colors.textMuted}
               multiline
               style={[styles.input, styles.textArea]}
-              accessibilityLabel="Näytekoodit"
+              accessibilityLabel={t('admin_screen.label_samples')}
             />
 
-            <Text style={styles.label}>Asteikkokysymykset (0-10)</Text>
+            <Text style={styles.label}>
+              {t('admin_screen.label_scale_questions')}
+            </Text>
             <TextInput
               value={scaleQuestionsText}
               onChangeText={setScaleQuestionsText}
-              placeholder="Yksi kysymys per rivi"
+              placeholder={t('admin_screen.placeholder_scale_questions')}
               placeholderTextColor={colors.textMuted}
               multiline
               style={[styles.input, styles.textArea]}
-              accessibilityLabel="Asteikkokysymykset"
+              accessibilityLabel={t('admin_screen.label_scale_questions')}
             />
 
-            <Text style={styles.label}>CATA-kysymyksen otsikko</Text>
+            <Text style={styles.label}>
+              {t('admin_screen.label_cata_question')}
+            </Text>
             <TextInput
               value={cataQuestionLabel}
               onChangeText={setCataQuestionLabel}
-              placeholder="Esim. Mitkä ominaisuudet tunnistit?"
+              placeholder={t('admin_screen.placeholder_cata_question')}
               placeholderTextColor={colors.textMuted}
               style={styles.input}
-              accessibilityLabel="CATA-kysymyksen otsikko"
+              accessibilityLabel={t('admin_screen.label_cata_question')}
             />
 
-            <Text style={styles.label}>CATA-vaihtoehdot</Text>
+            <Text style={styles.label}>
+              {t('admin_screen.label_cata_options')}
+            </Text>
             <TextInput
               value={cataOptionsText}
               onChangeText={setCataOptionsText}
-              placeholder="makea, hapan, pehmeä"
+              placeholder={t('admin_screen.placeholder_cata_options')}
               placeholderTextColor={colors.textMuted}
               multiline
               style={[styles.input, styles.textArea]}
-              accessibilityLabel="CATA-vaihtoehdot"
+              accessibilityLabel={t('admin_screen.label_cata_options')}
             />
 
             {preview ? (
               <View style={styles.previewCard}>
-                <Text style={styles.previewTitle}>Esikatselu</Text>
+                <Text style={styles.previewTitle}>
+                  {t('admin_screen.preview_title')}
+                </Text>
                 <Text style={styles.previewBody}>
-                  Näytteitä: {preview.samples.length}
-                  {'\n'}
-                  Kysymyksiä: {preview.questions.length}
+                  {t('admin_screen.preview_body', {
+                    samples: preview.samples.length,
+                    questions: preview.questions.length,
+                  })}
                 </Text>
               </View>
             ) : null}
@@ -274,23 +292,23 @@ export default function AdminScreen({ navigation }: Props): React.JSX.Element {
               }}
               disabled={saving}
               accessibilityRole="button"
-              accessibilityLabel="Tallenna käsin luotu kysely"
+              accessibilityLabel={t('admin_screen.save_manual_aria')}
             >
               {saving ? (
                 <ActivityIndicator color={colors.onPrimary} />
               ) : (
                 <Text style={styles.primaryButtonLabel}>
-                  Tallenna aktiiviseksi kyselyksi
+                  {t('admin_screen.save_manual_button')}
                 </Text>
               )}
             </Pressable>
           </View>
 
           <View style={styles.card}>
-            <Text style={styles.cardTitle}>Tai tuo JSON</Text>
-            <Text style={styles.helpText}>
-              Tuonti tukee kenttiä `title`, `samples` ja `questions`.
+            <Text style={styles.cardTitle}>
+              {t('admin_screen.import_title')}
             </Text>
+            <Text style={styles.helpText}>{t('admin_screen.import_help')}</Text>
 
             <TextInput
               value={importText}
@@ -299,7 +317,7 @@ export default function AdminScreen({ navigation }: Props): React.JSX.Element {
               placeholderTextColor={colors.textMuted}
               multiline
               style={[styles.input, styles.importArea]}
-              accessibilityLabel="JSON-tuonti"
+              accessibilityLabel={t('admin_screen.import_aria')}
             />
 
             <Pressable
@@ -312,9 +330,11 @@ export default function AdminScreen({ navigation }: Props): React.JSX.Element {
               }}
               disabled={saving}
               accessibilityRole="button"
-              accessibilityLabel="Tuo kysely JSONista"
+              accessibilityLabel={t('admin_screen.import_button_aria')}
             >
-              <Text style={styles.secondaryButtonLabel}>Tuo ja aktivoi kysely</Text>
+              <Text style={styles.secondaryButtonLabel}>
+                {t('admin_screen.import_button')}
+              </Text>
             </Pressable>
           </View>
 

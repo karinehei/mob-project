@@ -8,6 +8,8 @@ import {
   View,
 } from 'react-native';
 
+import { useTranslation } from 'react-i18next';
+
 import { ScreenContainer } from '../components/ScreenContainer';
 import { StudyAppBar } from '../components/StudyAppBar';
 import { colors } from '../theme/colors';
@@ -21,6 +23,8 @@ import { RootStackParamList } from '../navigation/AppNavigator';
 type Props = NativeStackScreenProps<RootStackParamList, 'Home' | 'Study'>;
 
 export default function HomeScreen({ navigation }: Props): React.JSX.Element {
+  const { t } = useTranslation();
+
   const {
     currentSample,
     isLoading,
@@ -39,7 +43,7 @@ export default function HomeScreen({ navigation }: Props): React.JSX.Element {
         <StudyAppBar />
         <View style={styles.centerContainer}>
           <ActivityIndicator size="large" color={colors.primary} />
-          <Text style={styles.infoText}>Ladataan istuntoa...</Text>
+          <Text style={styles.infoText}>{t('common.loading_session')}</Text>
         </View>
       </ScreenContainer>
     );
@@ -61,9 +65,9 @@ export default function HomeScreen({ navigation }: Props): React.JSX.Element {
               pressed && styles.retryButtonPressed,
             ]}
             accessibilityRole="button"
-            accessibilityLabel="Yritä uudelleen"
+            accessibilityLabel={t('common.try_again')}
           >
-            <Text style={styles.retryButtonLabel}>Yritä uudelleen</Text>
+            <Text style={styles.retryButtonLabel}>{t('common.try_again')}</Text>
           </Pressable>
           <Pressable
             onPress={() => navigation.navigate('Admin')}
@@ -72,9 +76,9 @@ export default function HomeScreen({ navigation }: Props): React.JSX.Element {
               pressed && styles.ghostButtonPressed,
             ]}
             accessibilityRole="button"
-            accessibilityLabel="Avaa kyselyn hallinta"
+            accessibilityLabel={t('home.open_admin')}
           >
-            <Text style={styles.ghostButtonLabel}>Avaa kyselyn hallinta</Text>
+            <Text style={styles.ghostButtonLabel}>{t('home.open_admin')}</Text>
           </Pressable>
         </View>
       </ScreenContainer>
@@ -87,9 +91,7 @@ export default function HomeScreen({ navigation }: Props): React.JSX.Element {
       <ScreenContainer testID="screen-home">
         <StudyAppBar />
         <View style={styles.centerContainer}>
-          <Text style={styles.infoText}>
-            Ei arvioitavia näytteitä juuri nyt.
-          </Text>
+          <Text style={styles.infoText}>{t('home.no_samples')}</Text>
           <Pressable
             onPress={async () => {
               await retryLoadSession();
@@ -99,9 +101,9 @@ export default function HomeScreen({ navigation }: Props): React.JSX.Element {
               pressed && styles.retryButtonPressed,
             ]}
             accessibilityRole="button"
-            accessibilityLabel="Päivitä näkymä"
+            accessibilityLabel={t('common.refresh')}
           >
-            <Text style={styles.retryButtonLabel}>Päivitä</Text>
+            <Text style={styles.retryButtonLabel}>{t('common.refresh')}</Text>
           </Pressable>
           <Pressable
             onPress={() => navigation.navigate('Admin')}
@@ -110,9 +112,9 @@ export default function HomeScreen({ navigation }: Props): React.JSX.Element {
               pressed && styles.ghostButtonPressed,
             ]}
             accessibilityRole="button"
-            accessibilityLabel="Avaa kyselyn hallinta"
+            accessibilityLabel={t('home.open_admin')}
           >
-            <Text style={styles.ghostButtonLabel}>Avaa kyselyn hallinta</Text>
+            <Text style={styles.ghostButtonLabel}>{t('home.open_admin')}</Text>
           </Pressable>
         </View>
       </ScreenContainer>
@@ -130,7 +132,9 @@ export default function HomeScreen({ navigation }: Props): React.JSX.Element {
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
-          <Text style={styles.pageTitle}>{questionnaireTitle}</Text>
+          <Text style={styles.pageTitle}>
+            {questionnaireTitle || t('home.active_questionnaire')}
+          </Text>
 
           {updateStatusMessage ? (
             <View style={styles.noticeBanner}>
@@ -145,15 +149,22 @@ export default function HomeScreen({ navigation }: Props): React.JSX.Element {
               pressed && styles.secondaryCtaPressed,
             ]}
             accessibilityRole="button"
-            accessibilityLabel="Avaa kyselyn hallinta"
+            accessibilityLabel={t('home.manage_questionnaire')}
           >
-            <Text style={styles.secondaryCtaLabel}>Hallinnoi kyselyä</Text>
+            <Text style={styles.secondaryCtaLabel}>
+              {t('home.manage_questionnaire')}
+            </Text>
           </Pressable>
 
           <View style={styles.questionnaireCard}>
-            <Text style={styles.questionnaireCardTitle}>Aktiivinen kysely</Text>
+            <Text style={styles.questionnaireCardTitle}>
+              {t('home.active_questionnaire')}
+            </Text>
             <Text style={styles.questionnaireCardBody}>
-              Näytteitä: {samples.length} / kysymyksiä: {questionnaireQuestions.length}
+              {t('home.questionnaire_stats', {
+                sampleCount: samples.length,
+                questionCount: questionnaireQuestions.length,
+              })}
             </Text>
             {questionnaireQuestions.length > 0 ? (
               <View style={styles.questionList}>
@@ -165,29 +176,30 @@ export default function HomeScreen({ navigation }: Props): React.JSX.Element {
               </View>
             ) : (
               <Text style={styles.questionnaireCardHint}>
-                Luo tai tuo uusi kysely hallintanäkymässä.
+                {t('home.create_questionnaire_hint')}
               </Text>
             )}
           </View>
 
           <View style={styles.sampleCard}>
-            <Text style={styles.sampleLabel}>Nykyinen näytekoodi:</Text>
+            <Text style={styles.sampleLabel}>{t('home.current_sample')}</Text>
             <Text style={styles.sampleCode}>{currentSample}</Text>
           </View>
 
-          <Text style={styles.instruction}>
-            Kysymykset haetaan aktiivisen kyselyn skeemasta. Arviointinakyma
-            mukautuu automaattisesti kysymystyyppeihin.
-          </Text>
+          <Text style={styles.instruction}>{t('home.instruction_text')}</Text>
 
           <View style={styles.ratingCard}>
-            <Text style={styles.ratingCardTitle}>Kysymystyypit</Text>
+            <Text style={styles.ratingCardTitle}>
+              {t('home.question_types')}
+            </Text>
             <View style={styles.questionList}>
               {questionnaireQuestions.map((question) => (
                 <View key={question.id} style={styles.questionTypeRow}>
                   <Text style={styles.questionListItem}>{question.label}</Text>
                   <Text style={styles.questionTypeTag}>
-                    {question.type === 'scale' ? 'Asteikko' : 'Monivalinta / CATA'}
+                    {question.type === 'scale'
+                      ? t('home.type_scale')
+                      : t('home.type_choice')}
                   </Text>
                 </View>
               ))}
@@ -200,9 +212,9 @@ export default function HomeScreen({ navigation }: Props): React.JSX.Element {
             style={({ pressed }) => [styles.cta, pressed && styles.ctaPressed]}
             onPress={() => navigation.navigate('Sample')}
             accessibilityRole="button"
-            accessibilityLabel="Aloita arviointi"
+            accessibilityLabel={t('home.start_evaluation')}
           >
-            <Text style={styles.ctaLabel}>Aloita arviointi</Text>
+            <Text style={styles.ctaLabel}>{t('home.start_evaluation')}</Text>
           </Pressable>
         </View>
       </View>

@@ -23,7 +23,9 @@
     "@react-navigation/native": "^7.2.2",
     "@react-navigation/native-stack": "^7.14.10",
     "firebase": "^11.10.0",
+    "i18next": "^26.0.6",
     "react": "18.3.1",
+    "react-i18next": "^17.0.4",
     "react-native": "0.76.5",
     "react-native-safe-area-context": "^5.7.0",
     "react-native-screens": "4.10.0"

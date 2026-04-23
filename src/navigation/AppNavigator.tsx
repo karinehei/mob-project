@@ -1,6 +1,8 @@
+import '../locales';
 import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { useTranslation } from 'react-i18next';
 
 import HomeScreen from '../screens/HomeScreen';
 import StudyScreen from '../screens/StudyScreen';
@@ -28,46 +30,46 @@ export type RootStackParamList = {
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export function AppNavigator(): React.JSX.Element {
+  const { t } = useTranslation();
   return (
     <NavigationContainer>
       <Stack.Navigator initialRouteName="Home">
         <Stack.Screen
           name="Home"
           component={HomeScreen}
-          options={{ title: 'Etusivu' }}
+          options={{ title: t('navigation.home') }}
         />
         <Stack.Screen
           name="Study"
           component={StudyScreen}
-          options={{ title: 'Aistinvarainen arviointi' }}
+          options={{ title: t('navigation.study') }}
         />
         <Stack.Screen
           name="Sample"
           component={SampleScreen}
-          options={{ title: 'Näyte' }}
+          options={{ title: t('navigation.sample') }}
         />
         <Stack.Screen
           name="Evaluation"
           component={EvaluationScreen}
-          options={{ title: 'Arviointi' }}
+          options={{ title: t('navigation.evaluation') }}
         />
         <Stack.Screen
           name="BackgroundInfo"
           component={BackgroundInfoScreen}
-          options={{ title: 'Taustatiedot' }}
+          options={{ title: t('navigation.background_info') }}
         />
         <Stack.Screen
           name="Admin"
           component={AdminScreen}
-          options={{ title: 'Kyselyn hallinta' }}
+          options={{ title: t('navigation.admin') }}
         />
         <Stack.Screen
           name="Result"
           component={ResultScreen}
-          options={{ title: 'Tulos' }}
+          options={{ title: t('navigation.result') }}
         />
       </Stack.Navigator>
     </NavigationContainer>
   );
 }
-

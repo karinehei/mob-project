@@ -1,3 +1,4 @@
+import '../../locales';
 import React from 'react';
 import { fireEvent, render, waitFor } from '@testing-library/react-native';
 
@@ -192,11 +193,7 @@ describe('evaluation flow regressions', () => {
       currentIndex: 0,
     };
 
-    const {
-      nextSample,
-      resetSession,
-      makeValue,
-    } = buildContext(state);
+    const { nextSample, resetSession, makeValue } = buildContext(state);
 
     mockUseSampleContext.mockImplementation(() => makeValue());
     mockSaveEvaluation.mockResolvedValue(undefined);
@@ -238,9 +235,11 @@ describe('evaluation flow regressions', () => {
     const { getByLabelText: getResultByLabel } = render(
       <ResultScreen
         navigation={{ reset: resetMock } as any}
-        route={{
-          params: { saveSucceeded: true, flowCompleted: false },
-        } as any}
+        route={
+          {
+            params: { saveSucceeded: true, flowCompleted: false },
+          } as any
+        }
       />,
     );
     // USER ACTION RESULT
@@ -254,7 +253,6 @@ describe('evaluation flow regressions', () => {
       index: 0,
       routes: [{ name: 'Home' }],
     });
-
   });
 
   it('viimeinen nayte ohjaa taustatietoihin', async () => {

@@ -7,6 +7,7 @@ import {
   Text,
   View,
 } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import { ScreenContainer } from '../components/ScreenContainer';
@@ -47,7 +48,11 @@ function ScaleQuestion({
   const minScore = question.minScore ?? 0;
   const maxScore = question.maxScore ?? 10;
   const values = useMemo(
-    () => Array.from({ length: maxScore - minScore + 1 }, (_, index) => minScore + index),
+    () =>
+      Array.from(
+        { length: maxScore - minScore + 1 },
+        (_, index) => minScore + index,
+      ),
     [maxScore, minScore],
   );
 
@@ -100,7 +105,9 @@ function MultiSelectQuestion({
   return (
     <View style={styles.questionCard}>
       <Text style={styles.questionTitle}>{question.label}</Text>
-      <Text style={styles.helpText}>Voit valita yhden tai useamman vaihtoehdon.</Text>
+      <Text style={styles.helpText}>
+        Voit valita yhden tai useamman vaihtoehdon.
+      </Text>
       <View style={styles.optionsWrap}>
         {options.map((option) => {
           const selected = values.includes(option);
@@ -143,6 +150,7 @@ function saveErrorMessage(err: unknown): string {
 export default function EvaluationScreen({
   navigation,
 }: Props): React.JSX.Element {
+  const { t } = useTranslation();
   const {
     currentSample,
     currentIndex,
@@ -174,7 +182,7 @@ export default function EvaluationScreen({
         <StudyAppBar />
         <View style={styles.centerContainer}>
           <ActivityIndicator size="large" color={colors.primary} />
-          <Text style={styles.infoText}>Ladataan arviointinäkymää...</Text>
+          <Text style={styles.infoText}>{t('eval_screen.loading')}</Text>
         </View>
       </ScreenContainer>
     );
@@ -187,17 +195,15 @@ export default function EvaluationScreen({
         <View style={styles.centerContainer}>
           <Text style={styles.infoText}>{error}</Text>
           <Pressable
-            onPress={async () => {
-              await retryLoadSession();
-            }}
+            onPress={async () => await retryLoadSession()}
             style={({ pressed }) => [
               styles.retryButton,
               pressed && styles.retryButtonPressed,
             ]}
             accessibilityRole="button"
-            accessibilityLabel="Yritä uudelleen"
+            accessibilityLabel={t('common.try_again')}
           >
-            <Text style={styles.retryButtonLabel}>Yritä uudelleen</Text>
+            <Text style={styles.retryButtonLabel}>{t('common.try_again')}</Text>
           </Pressable>
         </View>
       </ScreenContainer>
@@ -209,9 +215,8 @@ export default function EvaluationScreen({
       <ScreenContainer testID="screen-evaluation">
         <StudyAppBar />
         <View style={styles.centerContainer}>
-          <Text style={styles.infoText}>
-            Ei arvioitavaa näytettä tällä hetkellä.
-          </Text>
+          <Text style={styles.infoText}>{t('eval_screen.no_sample')}</Text>{' '}
+          {/* TRANSLATED */}
           <Pressable
             onPress={() => navigation.navigate('Home')}
             style={({ pressed }) => [
@@ -219,9 +224,11 @@ export default function EvaluationScreen({
               pressed && styles.retryButtonPressed,
             ]}
             accessibilityRole="button"
-            accessibilityLabel="Palaa etusivulle"
+            accessibilityLabel={t('eval_screen.back_home')}
           >
-            <Text style={styles.retryButtonLabel}>Palaa etusivulle</Text>
+            <Text style={styles.retryButtonLabel}>
+              {t('eval_screen.back_home')}
+            </Text>
           </Pressable>
         </View>
       </ScreenContainer>
@@ -237,7 +244,9 @@ export default function EvaluationScreen({
 
   const toggleMultiSelectAnswer = (questionId: string, option: string) => {
     setAnswers((prev) => {
-      const currentValue = Array.isArray(prev[questionId]) ? prev[questionId] : [];
+      const currentValue = Array.isArray(prev[questionId])
+        ? prev[questionId]
+        : [];
       const nextValues = currentValue.includes(option)
         ? currentValue.filter((item) => item !== option)
         : [...currentValue, option];
@@ -251,7 +260,7 @@ export default function EvaluationScreen({
 
   const onSave = async () => {
     if (!currentSample) {
-      setSaveError('Näytettä ei löytynyt. Palaa etusivulle ja yritä uudelleen.');
+      setSaveError(t('evaluation_screen.sample_not_found'));
       return;
     }
 
@@ -306,21 +315,20 @@ export default function EvaluationScreen({
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
-          <Text style={styles.pageTitle}>Arviointi</Text>
+          <Text style={styles.pageTitle}>{t('eval_screen.title')}</Text>
 
-          <Text style={styles.lead}>
-            Vastaa aktiivisen kyselyn kysymyksiin. Kysymykset renderoidaan
-            backendin skeemasta.
-          </Text>
+          <Text style={styles.lead}>{t('eval_screen.lead')}</Text>
 
           <View style={styles.infoCard}>
-            <Text style={styles.infoTitle}>Istunto: {sessionId ?? '—'}</Text>
+            <Text style={styles.infoTitle}>
+              {t('eval_screen.session')} {sessionId ?? '—'}
+            </Text>
             <Text style={styles.infoBody}>
-              Näyte: {currentSample ?? '—'}
+              {t('eval_screen.sample')} {currentSample ?? '—'}
               {'\n'}
-              Kysely: {questionnaireTitle}
+              {t('eval_screen.questionnaire')} {questionnaireTitle}
               {'\n'}
-              Kysymyksiä: {questionnaireQuestions.length}
+              {t('eval_screen.questions_count')} {questionnaireQuestions.length}
             </Text>
           </View>
 
@@ -381,12 +389,14 @@ export default function EvaluationScreen({
             onPress={onSave}
             disabled={!canSave}
             accessibilityRole="button"
-            accessibilityLabel="Tallenna arvio"
+            accessibilityLabel={t('eval_screen.save_aria')}
           >
             {saving ? (
               <ActivityIndicator color={colors.onPrimary} />
             ) : (
-              <Text style={styles.ctaLabel}>Tallenna ja jatka</Text>
+              <Text style={styles.ctaLabel}>
+                {t('eval_screen.save_and_continue')}
+              </Text>
             )}
           </Pressable>
         </View>

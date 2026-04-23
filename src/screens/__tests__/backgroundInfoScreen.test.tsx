@@ -1,3 +1,4 @@
+import '../../locales';
 import React from 'react';
 import { fireEvent, render, waitFor } from '@testing-library/react-native';
 
@@ -17,8 +18,9 @@ describe('BackgroundInfoScreen', () => {
   const mockUseSampleContext = useSampleContext as jest.MockedFunction<
     typeof useSampleContext
   >;
-  const mockSaveResponseSession =
-    saveResponseSession as jest.MockedFunction<typeof saveResponseSession>;
+  const mockSaveResponseSession = saveResponseSession as jest.MockedFunction<
+    typeof saveResponseSession
+  >;
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -49,7 +51,9 @@ describe('BackgroundInfoScreen', () => {
     );
 
     fireEvent.press(getByLabelText('Tallenna taustatiedot'));
-    expect(await findByText('Anna ika kokonaislukuna valilta 10-120.')).toBeTruthy();
+    expect(
+      await findByText('Anna ika kokonaislukuna valilta 10-120.'),
+    ).toBeTruthy();
   });
 
   it('saves and navigates to result', async () => {
