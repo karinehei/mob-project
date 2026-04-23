@@ -45,6 +45,7 @@ function ScaleQuestion({
   value,
   onChange,
 }: ScaleQuestionProps): React.JSX.Element {
+  const { t } = useTranslation();
   const minScore = question.minScore ?? 0;
   const maxScore = question.maxScore ?? 10;
   const values = useMemo(
@@ -60,8 +61,9 @@ function ScaleQuestion({
     <View style={styles.questionCard}>
       <Text style={styles.questionTitle}>{question.label}</Text>
       <Text style={styles.scaleLegend}>
-        {minScore} = alin arvo{'\n'}
-        {maxScore} = ylin arvo
+        {minScore} = {t('eval_screen.min_val')}
+        {'\n'}
+        {maxScore} = {t('eval_screen.max_val')}
       </Text>
       <View style={styles.optionsWrap}>
         {values.map((optionValue) => {
@@ -77,7 +79,10 @@ function ScaleQuestion({
               ]}
               accessibilityRole="button"
               accessibilityState={{ selected }}
-              accessibilityLabel={`${question.label}: arvo ${optionValue}`}
+              accessibilityLabel={t('eval_screen.scale_value_aria', {
+                question: question.label,
+                value: optionValue,
+              })}
             >
               <Text
                 style={[
@@ -100,14 +105,13 @@ function MultiSelectQuestion({
   values,
   onToggle,
 }: MultiSelectQuestionProps): React.JSX.Element {
+  const { t } = useTranslation();
   const options = question.options ?? [];
 
   return (
     <View style={styles.questionCard}>
       <Text style={styles.questionTitle}>{question.label}</Text>
-      <Text style={styles.helpText}>
-        Voit valita yhden tai useamman vaihtoehdon.
-      </Text>
+      <Text style={styles.helpText}>{t('eval_screen.multi_help')}</Text>
       <View style={styles.optionsWrap}>
         {options.map((option) => {
           const selected = values.includes(option);
@@ -122,7 +126,10 @@ function MultiSelectQuestion({
               ]}
               accessibilityRole="button"
               accessibilityState={{ selected }}
-              accessibilityLabel={`${question.label}: ${option}`}
+              accessibilityLabel={t('eval_screen.option_aria', {
+                question: question.label,
+                option,
+              })}
             >
               <Text
                 style={[
@@ -138,13 +145,6 @@ function MultiSelectQuestion({
       </View>
     </View>
   );
-}
-
-function saveErrorMessage(err: unknown): string {
-  if (err instanceof Error && err.message) {
-    return err.message;
-  }
-  return 'Tallennus epäonnistui. Tarkista verkko ja yritä uudelleen.';
 }
 
 export default function EvaluationScreen({
@@ -298,7 +298,11 @@ export default function EvaluationScreen({
         });
       }
     } catch (e) {
-      setSaveError(saveErrorMessage(e));
+      if (e instanceof Error && e.message) {
+        setSaveError(e.message);
+      } else {
+        setSaveError(t('eval_screen.save_failed'));
+      }
     } finally {
       setSaving(false);
     }

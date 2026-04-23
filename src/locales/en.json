@@ -16,7 +16,9 @@
   },
   "appBar": {
     "title": "Food_Study",
-    "menu_accessibility": "Menu"
+    "menu_accessibility": "Menu",
+    "switch_to_finnish": "Switch to Finnish",
+    "switch_to_english": "Switch to English"
   },
   "home": {
     "open_admin": "Open admin panel",
@@ -59,7 +61,9 @@
     "questionnaire": "Questionnaire:",
     "questions_count": "Questions:",
     "save_aria": "Save evaluation",
-    "save_and_continue": "Save and continue"
+    "save_and_continue": "Save and continue",
+    "scale_value_aria": "{{question}}: value {{value}}",
+    "option_aria": "{{question}}: {{option}}"
   },
   "result_screen": {
     "new_round": "Start a new round",
