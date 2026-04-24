@@ -321,3 +321,9 @@ Epäonnistunut vaihe (mukaan lukien Android-build) **estää merge-ehdon**, jos 
 ## Dokumentaatio
 
 - [WSL.md](./WSL.md) — WSL2, `metadata`-mount, npm-oikeudet, adb, mirrored networking, Metro-virheet.
+
+## Lisenssi
+
+Tämä projekti on lisensoitu Apache License 2.0 -lisenssillä.
+
+Katso lisätiedot LICENSE-tiedostosta.
