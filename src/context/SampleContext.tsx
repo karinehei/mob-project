@@ -66,27 +66,46 @@ export const SampleProvider: React.FC<ProviderProps> = ({ children }) => {
     null,
   );
 
-  const loadSession = useCallback(async (betweenSessions = false) => {
-    const hasCachedSession = Boolean(sessionId) && samples.length > 0;
+  const loadSession = useCallback(
+    async (betweenSessions = false) => {
+      const hasCachedSession = Boolean(sessionId) && samples.length > 0;
 
-    try {
-      setIsLoading(true);
-      if (!betweenSessions) {
-        setError(null);
-      }
-      const session = await fetchActiveStudySession();
+      try {
+        setIsLoading(true);
+        if (!betweenSessions) {
+          setError(null);
+        }
+        const session = await fetchActiveStudySession();
 
-      if (session && session.samples.length > 0) {
-        const shuffledSamples = shuffleSamples(session.samples);
-        setSessionId(session.id);
-        setResponseSessionId(createResponseSessionId());
-        setQuestionnaireTitle(session.title);
-        setQuestionnaireQuestions(session.questions);
-        setSamples(shuffledSamples);
-        setCurrentIndex(0);
-        setError(null);
-        setUpdateStatusMessage(null);
-      } else {
+        if (session && session.samples.length > 0) {
+          const shuffledSamples = shuffleSamples(session.samples);
+          setSessionId(session.id);
+          setResponseSessionId(createResponseSessionId());
+          setQuestionnaireTitle(session.title);
+          setQuestionnaireQuestions(session.questions);
+          setSamples(shuffledSamples);
+          setCurrentIndex(0);
+          setError(null);
+          setUpdateStatusMessage(null);
+        } else {
+          if (betweenSessions && hasCachedSession) {
+            setResponseSessionId(createResponseSessionId());
+            setCurrentIndex(0);
+            setSamples((prev) => shuffleSamples(prev));
+            setUpdateStatusMessage(
+              'Kyselyn päivitystarkistus epäonnistui. Käytetään viimeksi ladattua kyselyä.',
+            );
+            return;
+          }
+          setSessionId(null);
+          setQuestionnaireTitle('Aistinvarainen arviointi');
+          setQuestionnaireQuestions([]);
+          setSamples([]);
+          setCurrentIndex(0);
+          setError('Aktiivista tutkimusistuntoa ei löytynyt.');
+          setUpdateStatusMessage(null);
+        }
+      } catch {
         if (betweenSessions && hasCachedSession) {
           setResponseSessionId(createResponseSessionId());
           setCurrentIndex(0);
@@ -94,40 +113,24 @@ export const SampleProvider: React.FC<ProviderProps> = ({ children }) => {
           setUpdateStatusMessage(
             'Kyselyn päivitystarkistus epäonnistui. Käytetään viimeksi ladattua kyselyä.',
           );
-          return;
+        } else {
+          setSessionId(null);
+          setResponseSessionId(createResponseSessionId());
+          setQuestionnaireTitle('Aistinvarainen arviointi');
+          setQuestionnaireQuestions([]);
+          setSamples([]);
+          setCurrentIndex(0);
+          setError(
+            'Istunnon haku epäonnistui. Tarkista yhteys ja yritä uudelleen.',
+          );
+          setUpdateStatusMessage(null);
         }
-        setSessionId(null);
-        setQuestionnaireTitle('Aistinvarainen arviointi');
-        setQuestionnaireQuestions([]);
-        setSamples([]);
-        setCurrentIndex(0);
-        setError('Aktiivista tutkimusistuntoa ei löytynyt.');
-        setUpdateStatusMessage(null);
+      } finally {
+        setIsLoading(false);
       }
-    } catch {
-      if (betweenSessions && hasCachedSession) {
-        setResponseSessionId(createResponseSessionId());
-        setCurrentIndex(0);
-        setSamples((prev) => shuffleSamples(prev));
-        setUpdateStatusMessage(
-          'Kyselyn päivitystarkistus epäonnistui. Käytetään viimeksi ladattua kyselyä.',
-        );
-      } else {
-        setSessionId(null);
-        setResponseSessionId(createResponseSessionId());
-        setQuestionnaireTitle('Aistinvarainen arviointi');
-        setQuestionnaireQuestions([]);
-        setSamples([]);
-        setCurrentIndex(0);
-        setError(
-          'Istunnon haku epäonnistui. Tarkista yhteys ja yritä uudelleen.',
-        );
-        setUpdateStatusMessage(null);
-      }
-    } finally {
-      setIsLoading(false);
-    }
-  }, [samples.length, sessionId]);
+    },
+    [samples.length, sessionId],
+  );
 
   useEffect(() => {
     loadSession();

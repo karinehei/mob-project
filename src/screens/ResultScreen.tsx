@@ -6,7 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { ScreenContainer } from '../components/ScreenContainer';
 import { StudyAppBar } from '../components/StudyAppBar';
 import { RootStackParamList } from '../navigation/AppNavigator';
-import { colors } from '../theme/colors';
+import { colors, shadows } from '../theme/colors';
 import { spacing } from '../theme/spacing';
 import { typography } from '../theme/typography';
 import { useSampleContext } from '../context/SampleContext';
@@ -27,9 +27,9 @@ export default function ResultScreen({
     ? t('result_screen.new_round')
     : t('result_screen.next_sample');
 
-  const handleNextStep = async () => {
+  const handleNextStep = () => {
     if (flowCompleted) {
-      await resetSession();
+      resetSession();
     } else {
       nextSample();
     }
@@ -75,9 +75,7 @@ export default function ResultScreen({
         <View style={styles.footer}>
           <Pressable
             style={({ pressed }) => [styles.cta, pressed && styles.ctaPressed]}
-            onPress={() => {
-              handleNextStep().catch(() => undefined);
-            }}
+            onPress={handleNextStep}
             accessibilityRole="button"
             accessibilityLabel={primaryCtaLabel}
           >
@@ -102,9 +100,7 @@ const styles = StyleSheet.create({
     paddingBottom: spacing.xl,
   },
   pageTitle: {
-    fontSize: 24,
-    lineHeight: 30,
-    fontWeight: '700',
+    ...typography.title,
     color: colors.textPrimary,
   },
   lead: {
@@ -115,54 +111,41 @@ const styles = StyleSheet.create({
   infoCard: {
     marginTop: spacing.lg,
     padding: spacing.lg,
-    borderRadius: 16,
-    backgroundColor: colors.background,
-    borderWidth: 1,
-    borderColor: colors.border,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.06,
-    shadowRadius: 6,
-    elevation: 2,
+    borderRadius: 20,
+    backgroundColor: colors.surface,
+    ...shadows.card,
   },
   infoTitle: {
-    ...typography.body,
-    fontWeight: '700',
+    ...typography.h2,
     color: colors.textPrimary,
   },
   infoBody: {
     marginTop: spacing.sm,
     ...typography.body,
     color: colors.textSecondary,
-    lineHeight: 22,
+    lineHeight: 24,
   },
   footer: {
     paddingHorizontal: spacing.lg,
     paddingTop: spacing.md,
     paddingBottom: spacing.lg,
-    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopWidth: 1.5,
     borderTopColor: colors.border,
     backgroundColor: colors.background,
   },
   cta: {
     borderRadius: 999,
-    paddingVertical: spacing.md + 2,
+    minHeight: 60,
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: colors.primary,
-    shadowColor: colors.primary,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.25,
-    shadowRadius: 8,
-    elevation: 5,
+    ...shadows.button,
   },
   ctaPressed: {
     opacity: 0.9,
   },
   ctaLabel: {
-    ...typography.body,
-    fontWeight: '700',
+    ...typography.button,
     color: colors.onPrimary,
-    letterSpacing: 0.3,
   },
 });
