@@ -14,7 +14,10 @@ type ManualQuestionnaireInput = {
 
 function tWithFallback(key: string, fallback: string): string {
   const translated = i18next.t(key);
-  return translated === key ? fallback : translated;
+  if (typeof translated !== 'string') {
+    return fallback;
+  }
+  return translated.trim() && translated !== key ? translated : fallback;
 }
 
 export function parseTokenList(input: string): string[] {
