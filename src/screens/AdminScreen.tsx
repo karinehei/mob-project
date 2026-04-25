@@ -189,7 +189,7 @@ export default function AdminScreen({ navigation }: Props): React.JSX.Element {
         });
       }
 
-      setStatusMessage(`Vienti valmis: ${result.filename}`);
+      setStatusMessage(t('admin_screen.export_done', { filename: result.filename }));
     } catch (error) {
       setErrorMessage(getErrorMessage(error));
     } finally {
@@ -358,13 +358,12 @@ export default function AdminScreen({ navigation }: Props): React.JSX.Element {
           </View>
 
           <View style={styles.card}>
-            <Text style={styles.cardTitle}>Tulosten vienti</Text>
+            <Text style={styles.cardTitle}>{t('admin_screen.export_title')}</Text>
             <Text style={styles.helpText}>
-              Valitse kysely tai tutkimussessio ja lataa tulokset
-              CSV/XLS-muotoon.
+              {t('admin_screen.export_help')}
             </Text>
 
-            <Text style={styles.label}>Vientikohde</Text>
+            <Text style={styles.label}>{t('admin_screen.export_scope_label')}</Text>
             <View style={styles.toggleWrap}>
               <Pressable
                 style={({ pressed }) => [
@@ -377,7 +376,7 @@ export default function AdminScreen({ navigation }: Props): React.JSX.Element {
                 accessibilityState={{
                   selected: exportScope === 'questionnaire',
                 }}
-                accessibilityLabel="Valitse vientikohteeksi kysely"
+                accessibilityLabel={t('admin_screen.export_scope_questionnaire_aria')}
               >
                 <View
                   style={[
@@ -398,7 +397,7 @@ export default function AdminScreen({ navigation }: Props): React.JSX.Element {
                       styles.toggleChipTextSelected,
                   ]}
                 >
-                  Kysely
+                  {t('admin_screen.export_scope_questionnaire')}
                 </Text>
               </Pressable>
               <Pressable
@@ -410,7 +409,7 @@ export default function AdminScreen({ navigation }: Props): React.JSX.Element {
                 onPress={() => setExportScope('session')}
                 accessibilityRole="radio"
                 accessibilityState={{ selected: exportScope === 'session' }}
-                accessibilityLabel="Valitse vientikohteeksi tutkimussessio"
+                accessibilityLabel={t('admin_screen.export_scope_session_aria')}
               >
                 <View
                   style={[
@@ -429,15 +428,15 @@ export default function AdminScreen({ navigation }: Props): React.JSX.Element {
                     exportScope === 'session' && styles.toggleChipTextSelected,
                   ]}
                 >
-                  Sessio
+                  {t('admin_screen.export_scope_session')}
                 </Text>
               </Pressable>
             </View>
 
             <Text style={styles.label}>
               {exportScope === 'questionnaire'
-                ? 'Valitse kysely'
-                : 'Valitse sessio'}
+                ? t('admin_screen.export_select_questionnaire')
+                : t('admin_screen.export_select_session')}
             </Text>
             {loadingExportOptions ? (
               <View style={styles.inlineLoader}>
@@ -445,7 +444,7 @@ export default function AdminScreen({ navigation }: Props): React.JSX.Element {
               </View>
             ) : exportOptions.length === 0 ? (
               <Text style={styles.helpText}>
-                Ei vietäviä kohteita. Tallenna ensin vastaussessioita.
+                {t('admin_screen.export_no_items')}
               </Text>
             ) : (
               <View style={styles.optionsWrap}>
@@ -462,7 +461,7 @@ export default function AdminScreen({ navigation }: Props): React.JSX.Element {
                       onPress={() => setSelectedExportValue(value)}
                       accessibilityRole="radio"
                       accessibilityState={{ selected }}
-                      accessibilityLabel={`Vientikohde: ${value}`}
+                      accessibilityLabel={t('admin_screen.export_target_aria', { value })}
                     >
                       <View
                         style={[
@@ -487,7 +486,7 @@ export default function AdminScreen({ navigation }: Props): React.JSX.Element {
               </View>
             )}
 
-            <Text style={styles.label}>Tiedostomuoto</Text>
+            <Text style={styles.label}>{t('admin_screen.export_format_label')}</Text>
             <View style={styles.toggleWrap}>
               <Pressable
                 style={({ pressed }) => [
@@ -498,7 +497,7 @@ export default function AdminScreen({ navigation }: Props): React.JSX.Element {
                 onPress={() => setExportFormat('csv')}
                 accessibilityRole="radio"
                 accessibilityState={{ selected: exportFormat === 'csv' }}
-                accessibilityLabel="Valitse tiedostomuodoksi CSV"
+                accessibilityLabel={t('admin_screen.export_format_csv_aria')}
               >
                 <View
                   style={[
@@ -527,7 +526,7 @@ export default function AdminScreen({ navigation }: Props): React.JSX.Element {
                 onPress={() => setExportFormat('xls')}
                 accessibilityRole="radio"
                 accessibilityState={{ selected: exportFormat === 'xls' }}
-                accessibilityLabel="Valitse tiedostomuodoksi XLS"
+                accessibilityLabel={t('admin_screen.export_format_xls_aria')}
               >
                 <View
                   style={[
@@ -563,12 +562,14 @@ export default function AdminScreen({ navigation }: Props): React.JSX.Element {
               }}
               disabled={exporting || !selectedExportValue}
               accessibilityRole="button"
-              accessibilityLabel="Käynnistä tulosten vienti"
+              accessibilityLabel={t('admin_screen.export_start_aria')}
             >
               {exporting ? (
                 <ActivityIndicator color={colors.onPrimary} />
               ) : (
-                <Text style={styles.primaryButtonLabel}>Lataa tulokset</Text>
+                <Text style={styles.primaryButtonLabel}>
+                  {t('admin_screen.export_download_button')}
+                </Text>
               )}
             </Pressable>
           </View>
