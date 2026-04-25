@@ -1,5 +1,8 @@
 # Food_Study
 
+[![License: Apache-2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](./LICENSE)
+[![Wiki](https://img.shields.io/badge/Wiki-Documentation-6f42c1)](https://github.com/karinehei/mob-project/wiki)
+
 React Native -mobiilisovelluksen kehitysrunko (tutkimus/food-study -konteksti). Mukana on navigoinnin ja näkymien perusrakenne, teemat, yhteisiä komponentteja, Firebase/Firestore -alustus, minimaalinen hallintanäkymä kyselyiden luontiin tai JSON-tuontiin, sekä Android-natiivikerros. Kehitystyökalut ja GitHub Actions -CI (JavaScript-laatu + Android **debug** -käännöksen validointi).
 
 ## Teknologiat
