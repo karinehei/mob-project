@@ -121,6 +121,7 @@
     "export_download_button": "Download results",
     "import_title": "Or Import JSON",
     "import_help": "Import supports `title`, `samples` and `questions` fields.",
+    "import_placeholder_json": "{\n  \"title\": \"Yogurt Test\",\n  \"samples\": [\"451\", \"926\", \"780\"],\n  \"questions\": [\n    { \"label\": \"Appearance\", \"type\": \"scale\", \"minScore\": 0, \"maxScore\": 10 },\n    { \"label\": \"Aroma\", \"type\": \"scale\", \"minScore\": 0, \"maxScore\": 10 },\n    { \"label\": \"Recognized attributes\", \"type\": \"multiSelect\", \"options\": [\"sweet\", \"sour\", \"soft\"] }\n  ]\n}",
     "import_aria": "JSON import",
     "import_button_aria": "Import questionnaire from JSON",
     "import_button": "Import and activate questionnaire"

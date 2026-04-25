@@ -32,16 +32,6 @@ import { useSampleContext } from '../context/SampleContext';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Admin'>;
 
-const IMPORT_PLACEHOLDER = `{
-  "title": "Jogurttitesti",
-  "samples": ["451", "926", "780"],
-  "questions": [
-    { "label": "Ulkonäkö", "type": "scale", "minScore": 0, "maxScore": 10 },
-    { "label": "Tuoksu", "type": "scale", "minScore": 0, "maxScore": 10 },
-    { "label": "Havaitut ominaisuudet", "type": "multiSelect", "options": ["makea", "hapan", "pehmeä"] }
-  ]
-}`;
-
 export default function AdminScreen({ navigation }: Props): React.JSX.Element {
   const { t } = useTranslation();
   const { retryLoadSession } = useSampleContext();
@@ -332,7 +322,7 @@ export default function AdminScreen({ navigation }: Props): React.JSX.Element {
             <TextInput
               value={importText}
               onChangeText={setImportText}
-              placeholder={IMPORT_PLACEHOLDER}
+              placeholder={t('admin_screen.import_placeholder_json')}
               placeholderTextColor={colors.textMuted}
               multiline
               style={[styles.input, styles.importArea]}

@@ -121,6 +121,7 @@
     "export_download_button": "Lataa tulokset",
     "import_title": "Tai tuo JSON",
     "import_help": "Tuonti tukee kenttiä `title`, `samples` ja `questions`.",
+    "import_placeholder_json": "{\n  \"title\": \"Jogurttitesti\",\n  \"samples\": [\"451\", \"926\", \"780\"],\n  \"questions\": [\n    { \"label\": \"Ulkonäkö\", \"type\": \"scale\", \"minScore\": 0, \"maxScore\": 10 },\n    { \"label\": \"Tuoksu\", \"type\": \"scale\", \"minScore\": 0, \"maxScore\": 10 },\n    { \"label\": \"Havaitut ominaisuudet\", \"type\": \"multiSelect\", \"options\": [\"makea\", \"hapan\", \"pehmeä\"] }\n  ]\n}",
     "import_aria": "JSON-tuonti",
     "import_button_aria": "Tuo kysely JSONista",
     "import_button": "Tuo ja aktivoi kysely"
