@@ -16,7 +16,10 @@ import { useTranslation } from 'react-i18next';
 import { ScreenContainer } from '../components/ScreenContainer';
 import { StudyAppBar } from '../components/StudyAppBar';
 import { RootStackParamList } from '../navigation/AppNavigator';
-import { exportResults, getResultExportOptions } from '../services/resultsExportService';
+import {
+  exportResults,
+  getResultExportOptions,
+} from '../services/resultsExportService';
 import { saveQuestionnaire } from '../services/questionnaireService';
 import { colors } from '../theme/colors';
 import { spacing } from '../theme/spacing';
@@ -67,7 +70,9 @@ export default function AdminScreen({ navigation }: Props): React.JSX.Element {
   const [exporting, setExporting] = useState(false);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [questionnaireOptions, setQuestionnaireOptions] = useState<string[]>([]);
+  const [questionnaireOptions, setQuestionnaireOptions] = useState<string[]>(
+    [],
+  );
   const [sessionOptions, setSessionOptions] = useState<string[]>([]);
   const [exportScope, setExportScope] = useState<'questionnaire' | 'session'>(
     'questionnaire',
@@ -95,14 +100,17 @@ export default function AdminScreen({ navigation }: Props): React.JSX.Element {
     cataOptionsText,
   ]);
 
-  const exportOptions = exportScope === 'questionnaire' ? questionnaireOptions : sessionOptions;
+  const exportOptions =
+    exportScope === 'questionnaire' ? questionnaireOptions : sessionOptions;
 
   useEffect(() => {
     const loadExportOptions = async () => {
       setLoadingExportOptions(true);
       try {
         const options = await getResultExportOptions();
-        setQuestionnaireOptions(options.questionnaireOptions.map((item) => item.value));
+        setQuestionnaireOptions(
+          options.questionnaireOptions.map((item) => item.value),
+        );
         setSessionOptions(options.sessionOptions.map((item) => item.value));
       } catch {
         // Keep export section usable even if options loading fails.
@@ -157,7 +165,11 @@ export default function AdminScreen({ navigation }: Props): React.JSX.Element {
     setExporting(true);
     setErrorMessage(null);
     try {
-      const result = await exportResults(exportScope, selectedExportValue, exportFormat);
+      const result = await exportResults(
+        exportScope,
+        selectedExportValue,
+        exportFormat,
+      );
       const payload = `\uFEFF${result.content}`;
       const dataUri = `data:${result.mimeType};charset=utf-8,${encodeURIComponent(payload)}`;
 
@@ -341,7 +353,8 @@ export default function AdminScreen({ navigation }: Props): React.JSX.Element {
           <View style={styles.card}>
             <Text style={styles.cardTitle}>Tulosten vienti</Text>
             <Text style={styles.helpText}>
-              Valitse kysely tai tutkimussessio ja lataa tulokset CSV/XLS-muotoon.
+              Valitse kysely tai tutkimussessio ja lataa tulokset
+              CSV/XLS-muotoon.
             </Text>
 
             <Text style={styles.label}>Vientikohde</Text>
@@ -353,13 +366,29 @@ export default function AdminScreen({ navigation }: Props): React.JSX.Element {
                   pressed && styles.toggleChipPressed,
                 ]}
                 onPress={() => setExportScope('questionnaire')}
-                accessibilityRole="button"
+                accessibilityRole="radio"
+                accessibilityState={{
+                  selected: exportScope === 'questionnaire',
+                }}
                 accessibilityLabel="Valitse vientikohteeksi kysely"
               >
+                <View
+                  style={[
+                    styles.radioCircle,
+                    exportScope === 'questionnaire' &&
+                      styles.radioCircleSelected,
+                  ]}
+                >
+                  {exportScope === 'questionnaire' && (
+                    <View style={styles.radioDot} />
+                  )}
+                </View>
+
                 <Text
                   style={[
                     styles.toggleChipText,
-                    exportScope === 'questionnaire' && styles.toggleChipTextSelected,
+                    exportScope === 'questionnaire' &&
+                      styles.toggleChipTextSelected,
                   ]}
                 >
                   Kysely
@@ -372,9 +401,21 @@ export default function AdminScreen({ navigation }: Props): React.JSX.Element {
                   pressed && styles.toggleChipPressed,
                 ]}
                 onPress={() => setExportScope('session')}
-                accessibilityRole="button"
+                accessibilityRole="radio"
+                accessibilityState={{ selected: exportScope === 'session' }}
                 accessibilityLabel="Valitse vientikohteeksi tutkimussessio"
               >
+                <View
+                  style={[
+                    styles.radioCircle,
+                    exportScope === 'session' && styles.radioCircleSelected,
+                  ]}
+                >
+                  {exportScope === 'session' && (
+                    <View style={styles.radioDot} />
+                  )}
+                </View>
+
                 <Text
                   style={[
                     styles.toggleChipText,
@@ -387,7 +428,9 @@ export default function AdminScreen({ navigation }: Props): React.JSX.Element {
             </View>
 
             <Text style={styles.label}>
-              {exportScope === 'questionnaire' ? 'Valitse kysely' : 'Valitse sessio'}
+              {exportScope === 'questionnaire'
+                ? 'Valitse kysely'
+                : 'Valitse sessio'}
             </Text>
             {loadingExportOptions ? (
               <View style={styles.inlineLoader}>
@@ -410,10 +453,19 @@ export default function AdminScreen({ navigation }: Props): React.JSX.Element {
                         pressed && !selected && styles.optionChipPressed,
                       ]}
                       onPress={() => setSelectedExportValue(value)}
-                      accessibilityRole="button"
+                      accessibilityRole="radio"
                       accessibilityState={{ selected }}
                       accessibilityLabel={`Vientikohde: ${value}`}
                     >
+                      <View
+                        style={[
+                          styles.radioCircle,
+                          selected && styles.radioCircleSelected,
+                        ]}
+                      >
+                        {selected && <View style={styles.radioDot} />}
+                      </View>
+
                       <Text
                         style={[
                           styles.optionChipText,
@@ -437,9 +489,19 @@ export default function AdminScreen({ navigation }: Props): React.JSX.Element {
                   pressed && styles.toggleChipPressed,
                 ]}
                 onPress={() => setExportFormat('csv')}
-                accessibilityRole="button"
+                accessibilityRole="radio"
+                accessibilityState={{ selected: exportFormat === 'csv' }}
                 accessibilityLabel="Valitse tiedostomuodoksi CSV"
               >
+                <View
+                  style={[
+                    styles.radioCircle,
+                    exportFormat === 'csv' && styles.radioCircleSelected,
+                  ]}
+                >
+                  {exportFormat === 'csv' && <View style={styles.radioDot} />}
+                </View>
+
                 <Text
                   style={[
                     styles.toggleChipText,
@@ -456,9 +518,19 @@ export default function AdminScreen({ navigation }: Props): React.JSX.Element {
                   pressed && styles.toggleChipPressed,
                 ]}
                 onPress={() => setExportFormat('xls')}
-                accessibilityRole="button"
+                accessibilityRole="radio"
+                accessibilityState={{ selected: exportFormat === 'xls' }}
                 accessibilityLabel="Valitse tiedostomuodoksi XLS"
               >
+                <View
+                  style={[
+                    styles.radioCircle,
+                    exportFormat === 'xls' && styles.radioCircleSelected,
+                  ]}
+                >
+                  {exportFormat === 'xls' && <View style={styles.radioDot} />}
+                </View>
+
                 <Text
                   style={[
                     styles.toggleChipText,
@@ -474,7 +546,10 @@ export default function AdminScreen({ navigation }: Props): React.JSX.Element {
               style={({ pressed }) => [
                 styles.primaryButton,
                 (exporting || !selectedExportValue) && styles.disabledButton,
-                pressed && !exporting && selectedExportValue && styles.primaryButtonPressed,
+                pressed &&
+                  !exporting &&
+                  selectedExportValue &&
+                  styles.primaryButtonPressed,
               ]}
               onPress={() => {
                 onStartExport().catch(() => undefined);
@@ -545,6 +620,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm + 2,
+    minHeight: 48,
     ...typography.body,
     color: colors.textPrimary,
     backgroundColor: colors.surface,
@@ -623,7 +699,8 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
   },
   toggleChip: {
-    minHeight: 40,
+    flexDirection: 'row',
+    minHeight: 48,
     borderRadius: 999,
     borderWidth: 1,
     borderColor: colors.border,
@@ -653,12 +730,13 @@ const styles = StyleSheet.create({
   },
   optionsWrap: {
     marginTop: spacing.md,
-    flexDirection: 'row',
-    flexWrap: 'wrap',
+    flexDirection: 'column',
     gap: spacing.sm,
   },
   optionChip: {
-    minHeight: 40,
+    flexDirection: 'row',
+    alignItems: 'center',
+    minHeight: 48,
     borderRadius: 999,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
@@ -672,6 +750,26 @@ const styles = StyleSheet.create({
   },
   optionChipPressed: {
     opacity: 0.92,
+  },
+  radioCircle: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    borderWidth: 2,
+    borderColor: colors.border,
+    marginRight: spacing.sm,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.surface,
+  },
+  radioCircleSelected: {
+    borderColor: colors.primary,
+  },
+  radioDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: colors.primary,
   },
   optionChipText: {
     ...typography.body,

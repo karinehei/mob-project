@@ -105,6 +105,10 @@ export default function BackgroundInfoScreen({
               placeholderTextColor={colors.textMuted}
               style={styles.input}
               accessibilityLabel={t('background_info.label_age')}
+              accessibilityHint={t(
+                'background_info.age_hint',
+                'Syötä ikäsi numeroina',
+              )}
             />
 
             <Text style={styles.label}>
@@ -126,12 +130,21 @@ export default function BackgroundInfoScreen({
                       selected && styles.optionChipSelected,
                       pressed && !selected && styles.optionChipPressed,
                     ]}
-                    accessibilityRole="button"
+                    accessibilityRole="radio"
                     accessibilityState={{ selected }}
                     accessibilityLabel={t('background_info.gender_aria', {
                       option: translatedLabel,
                     })}
                   >
+                    <View
+                      style={[
+                        styles.radioCircle,
+                        selected && styles.radioCircleSelected,
+                      ]}
+                    >
+                      {selected && <View style={styles.radioDot} />}
+                    </View>
+
                     <Text
                       style={[
                         styles.optionChipText,
@@ -218,6 +231,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm + 2,
+    minHeight: 48,
     ...typography.body,
     color: colors.textPrimary,
     backgroundColor: colors.surface,
@@ -229,7 +243,9 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
   },
   optionChip: {
-    minHeight: 44,
+    flexDirection: 'row',
+    alignItems: 'center',
+    minHeight: 48,
     borderRadius: 999,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
@@ -242,6 +258,26 @@ const styles = StyleSheet.create({
     borderColor: colors.primary,
   },
   optionChipPressed: { opacity: 0.92 },
+  radioCircle: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    borderWidth: 2,
+    borderColor: colors.border,
+    marginRight: spacing.sm,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.surface,
+  },
+  radioCircleSelected: {
+    borderColor: colors.primary,
+  },
+  radioDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: colors.primary,
+  },
   optionChipText: {
     ...typography.body,
     color: colors.textPrimary,
