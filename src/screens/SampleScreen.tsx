@@ -24,11 +24,18 @@ export default function SampleScreen({ navigation }: Props): React.JSX.Element {
   const { t } = useTranslation();
   const { currentSample, isLoading, error, retryLoadSession } =
     useSampleContext();
+  const onBackPress = () => {
+    if (navigation.canGoBack?.()) {
+      navigation.goBack();
+      return;
+    }
+    navigation.navigate('Home');
+  };
 
   if (isLoading) {
     return (
       <ScreenContainer testID="screen-sample">
-        <StudyAppBar />
+        <StudyAppBar showBackButton onBackPress={onBackPress} />
         <View style={styles.centerContainer}>
           <ActivityIndicator size="large" color={colors.primary} />
           <Text style={styles.infoText}>{t('sample_screen.loading')}</Text>
@@ -40,7 +47,7 @@ export default function SampleScreen({ navigation }: Props): React.JSX.Element {
   if (error) {
     return (
       <ScreenContainer testID="screen-sample">
-        <StudyAppBar />
+        <StudyAppBar showBackButton onBackPress={onBackPress} />
         <View style={styles.centerContainer}>
           <Text style={styles.infoText}>{error}</Text>
           <Pressable
@@ -64,7 +71,7 @@ export default function SampleScreen({ navigation }: Props): React.JSX.Element {
   if (!currentSample) {
     return (
       <ScreenContainer testID="screen-sample">
-        <StudyAppBar />
+        <StudyAppBar showBackButton onBackPress={onBackPress} />
         <View style={styles.centerContainer}>
           <Text style={styles.infoText}>{t('sample_screen.no_active')}</Text>
           <Pressable
@@ -88,7 +95,7 @@ export default function SampleScreen({ navigation }: Props): React.JSX.Element {
   return (
     <ScreenContainer testID="screen-sample">
       <View style={styles.root}>
-        <StudyAppBar />
+        <StudyAppBar showBackButton onBackPress={onBackPress} />
 
         <ScrollView
           style={styles.scroll}
