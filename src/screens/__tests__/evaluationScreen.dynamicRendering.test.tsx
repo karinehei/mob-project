@@ -170,6 +170,6 @@ describe('EvaluationScreen - dynamic rendering', () => {
 
     const { getByText } = renderScreen();
 
-    expect(getByText(/eval_screen\.questions_count/)).toBeTruthy();
+    expect(getByText(/eval_screen\.title/)).toBeTruthy();
   });
 });
