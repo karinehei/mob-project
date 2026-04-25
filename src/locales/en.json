@@ -84,6 +84,7 @@
     "default_cata_label": "Which attributes did you recognize?",
     "default_cata_options": "sweet, sour, soft",
     "save_success": "Questionnaire saved as active ({{id}}).",
+    "save_success_with_export_hint": "Questionnaire saved as active ({{id}}). You can now refresh export targets and download results on this page.",
     "title": "Questionnaire Admin",
     "lead": "Create a new active questionnaire or import a complete JSON structure without direct Firestore editing.",
     "create_manual_title": "Create Questionnaire Manually",

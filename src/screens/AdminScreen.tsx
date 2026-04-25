@@ -147,8 +147,10 @@ export default function AdminScreen({ navigation }: Props): React.JSX.Element {
 
       const questionnaireId = await saveQuestionnaire(draft);
       await retryLoadSession();
-      setStatusMessage(t('admin_screen.save_success', { id: questionnaireId }));
-      navigation.navigate('Home');
+      setStatusMessage(
+        t('admin_screen.save_success_with_export_hint', { id: questionnaireId }),
+      );
+      await loadExportOptions();
     } catch (error) {
       setErrorMessage(getErrorMessage(error));
     } finally {
@@ -220,6 +222,8 @@ export default function AdminScreen({ navigation }: Props): React.JSX.Element {
             <TextInput
               value={title}
               onChangeText={setTitle}
+              autoCorrect={false}
+              spellCheck={false}
               placeholder={t('admin_screen.placeholder_name')}
               placeholderTextColor={colors.textMuted}
               style={styles.input}
@@ -230,6 +234,8 @@ export default function AdminScreen({ navigation }: Props): React.JSX.Element {
             <TextInput
               value={samplesText}
               onChangeText={setSamplesText}
+              autoCorrect={false}
+              spellCheck={false}
               placeholder={t('admin_screen.placeholder_samples')}
               placeholderTextColor={colors.textMuted}
               multiline
@@ -243,6 +249,8 @@ export default function AdminScreen({ navigation }: Props): React.JSX.Element {
             <TextInput
               value={scaleQuestionsText}
               onChangeText={setScaleQuestionsText}
+              autoCorrect={false}
+              spellCheck={false}
               placeholder={t('admin_screen.placeholder_scale_questions')}
               placeholderTextColor={colors.textMuted}
               multiline
@@ -256,6 +264,8 @@ export default function AdminScreen({ navigation }: Props): React.JSX.Element {
             <TextInput
               value={cataQuestionLabel}
               onChangeText={setCataQuestionLabel}
+              autoCorrect={false}
+              spellCheck={false}
               placeholder={t('admin_screen.placeholder_cata_question')}
               placeholderTextColor={colors.textMuted}
               style={styles.input}
@@ -268,6 +278,8 @@ export default function AdminScreen({ navigation }: Props): React.JSX.Element {
             <TextInput
               value={cataOptionsText}
               onChangeText={setCataOptionsText}
+              autoCorrect={false}
+              spellCheck={false}
               placeholder={t('admin_screen.placeholder_cata_options')}
               placeholderTextColor={colors.textMuted}
               multiline
@@ -320,6 +332,8 @@ export default function AdminScreen({ navigation }: Props): React.JSX.Element {
             <TextInput
               value={importText}
               onChangeText={setImportText}
+              autoCorrect={false}
+              spellCheck={false}
               placeholder={t('admin_screen.import_placeholder_json')}
               placeholderTextColor={colors.textMuted}
               multiline

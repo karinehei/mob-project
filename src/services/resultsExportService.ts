@@ -28,6 +28,17 @@ type ResponseSessionDoc = {
   createdAt?: unknown;
 };
 
+type EvaluationDoc = {
+  sessionId?: string | null;
+  responseSessionId?: string;
+  questionnaireTitle?: string | null;
+  sampleCode?: string;
+  samplePresentationIndex?: number;
+  samplePresentationOrder?: string[];
+  answers?: Record<string, unknown>;
+  createdAt?: unknown;
+};
+
 export type ExportOption = {
   value: string;
   label: string;
@@ -130,6 +141,41 @@ function mapDocToRows(doc: ResponseSessionDoc): CsvExportRow[] {
     .filter((row): row is CsvExportRow => Boolean(row));
 }
 
+function mapEvaluationDocToRow(doc: EvaluationDoc): CsvExportRow | null {
+  const sampleCode = typeof doc.sampleCode === 'string' ? doc.sampleCode.trim() : '';
+  if (!sampleCode) {
+    return null;
+  }
+
+  const responseSessionId =
+    typeof doc.responseSessionId === 'string' ? doc.responseSessionId : '';
+  const sessionId =
+    typeof doc.sessionId === 'string' ? doc.sessionId : doc.sessionId ?? '';
+  const questionnaireTitle =
+    typeof doc.questionnaireTitle === 'string' ? doc.questionnaireTitle : '';
+  const samplePresentationIndex =
+    typeof doc.samplePresentationIndex === 'number'
+      ? String(doc.samplePresentationIndex)
+      : '';
+  const samplePresentationOrder = Array.isArray(doc.samplePresentationOrder)
+    ? doc.samplePresentationOrder.map(String).join('|')
+    : '';
+
+  return {
+    responseSessionId,
+    sessionId: String(sessionId),
+    questionnaireTitle,
+    responseCreatedAt: formatTimestamp(doc.createdAt),
+    respondentAge: '',
+    respondentGender: '',
+    sampleCode,
+    samplePresentationIndex,
+    samplePresentationOrder,
+    evaluationCreatedAt: formatTimestamp(doc.createdAt),
+    answers: sanitizeAnswers(doc.answers),
+  };
+}
+
 function toExportOptions(counter: Map<string, number>): ExportOption[] {
   return Array.from(counter.entries())
     .map(([value, count]) => ({ value, label: value, count }))
@@ -138,14 +184,14 @@ function toExportOptions(counter: Map<string, number>): ExportOption[] {
 
 export async function getResultExportOptions(): Promise<ExportOptions> {
   const db = getFirestoreDb();
-  const snapshot = await getDocs(
+  const responseSessionSnapshot = await getDocs(
     query(collection(db, FIRESTORE_COLLECTIONS.responseSessions)),
   );
 
   const questionnaireCounter = new Map<string, number>();
   const sessionCounter = new Map<string, number>();
 
-  snapshot.docs.forEach((doc) => {
+  responseSessionSnapshot.docs.forEach((doc) => {
     const data = doc.data() as ResponseSessionDoc;
     const questionnaireTitle =
       typeof data.questionnaireTitle === 'string' ? data.questionnaireTitle.trim() : '';
@@ -161,6 +207,30 @@ export async function getResultExportOptions(): Promise<ExportOptions> {
       sessionCounter.set(sessionId, (sessionCounter.get(sessionId) ?? 0) + 1);
     }
   });
+
+  if (questionnaireCounter.size === 0 && sessionCounter.size === 0) {
+    const evaluationsSnapshot = await getDocs(
+      query(collection(db, FIRESTORE_COLLECTIONS.evaluations)),
+    );
+    evaluationsSnapshot.docs.forEach((doc) => {
+      const data = doc.data() as EvaluationDoc;
+      const questionnaireTitle =
+        typeof data.questionnaireTitle === 'string'
+          ? data.questionnaireTitle.trim()
+          : '';
+      if (questionnaireTitle) {
+        questionnaireCounter.set(
+          questionnaireTitle,
+          (questionnaireCounter.get(questionnaireTitle) ?? 0) + 1,
+        );
+      }
+
+      const sessionId = typeof data.sessionId === 'string' ? data.sessionId.trim() : '';
+      if (sessionId) {
+        sessionCounter.set(sessionId, (sessionCounter.get(sessionId) ?? 0) + 1);
+      }
+    });
+  }
 
   return {
     questionnaireOptions: toExportOptions(questionnaireCounter),
@@ -180,16 +250,29 @@ export async function exportResults(
 
   const field = scope === 'questionnaire' ? 'questionnaireTitle' : 'sessionId';
   const db = getFirestoreDb();
-  const snapshot = await getDocs(
+  const responseSessionSnapshot = await getDocs(
     query(
       collection(db, FIRESTORE_COLLECTIONS.responseSessions),
       where(field, '==', normalized),
     ),
   );
 
-  const rows = snapshot.docs.flatMap((doc) =>
+  let rows = responseSessionSnapshot.docs.flatMap((doc) =>
     mapDocToRows(doc.data() as ResponseSessionDoc),
   );
+
+  if (rows.length === 0) {
+    const evaluationsSnapshot = await getDocs(
+      query(
+        collection(db, FIRESTORE_COLLECTIONS.evaluations),
+        where(field, '==', normalized),
+      ),
+    );
+    rows = evaluationsSnapshot.docs
+      .map((doc) => mapEvaluationDocToRow(doc.data() as EvaluationDoc))
+      .filter((row): row is CsvExportRow => Boolean(row));
+  }
+
   if (rows.length === 0) {
     throw new Error('Valitulle kohteelle ei löytynyt vietäviä vastauksia.');
   }

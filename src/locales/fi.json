@@ -84,6 +84,7 @@
     "default_cata_label": "Mitkä ominaisuudet tunnistit?",
     "default_cata_options": "makea, hapan, pehmeä",
     "save_success": "Kysely tallennettu aktiiviseksi ({{id}}).",
+    "save_success_with_export_hint": "Kysely tallennettu aktiiviseksi ({{id}}). Voit nyt paivittaa vientikohteet ja ladata tulokset samalta sivulta.",
     "title": "Kyselyn hallinta",
     "lead": "Luo uusi aktiivinen kysely tai tuo valmis JSON-rakenne ilman suoraa Firestore-muokkausta.",
     "create_manual_title": "Luo kysely käsin",
