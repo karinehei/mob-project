@@ -1,6 +1,30 @@
+jest.mock('../../services/studyService', () => ({
+  fetchActiveStudySession: jest.fn(),
+}));
+
+// Mock i18n
+jest.mock('react-i18next', () => ({
+  useTranslation: () => ({
+    t: (key: string) => key,
+    i18n: {
+      resolvedLanguage: 'fi',
+      language: 'fi',
+      changeLanguage: jest.fn(() => Promise.resolve()),
+    },
+  }),
+}));
+
+// Mock context
+jest.mock('../../context/SampleContext');
+
+jest.mock('../../services/evaluationService', () => ({
+  __esModule: true,
+  saveEvaluation: jest.fn(() => Promise.resolve()),
+  getSamples: jest.fn(() => Promise.resolve([])),
+}));
+
 import React from 'react';
 import { render } from '@testing-library/react-native';
-
 import EvaluationScreen from '../EvaluationScreen';
 import { useSampleContext } from '../../context/SampleContext';
 
@@ -22,16 +46,6 @@ const mockRoute = {
   name: 'Evaluation',
   params: undefined,
 };
-
-// Mock i18n
-jest.mock('react-i18next', () => ({
-  useTranslation: () => ({
-    t: (key: string) => key,
-  }),
-}));
-
-// Mock context
-jest.mock('../../context/SampleContext');
 
 const mockedUseSampleContext = useSampleContext as jest.Mock;
 
@@ -156,6 +170,6 @@ describe('EvaluationScreen - dynamic rendering', () => {
 
     const { getByText } = renderScreen();
 
-    expect(getByText('eval_screen.questions_count')).toBeTruthy();
+    expect(getByText(/eval_screen\.questions_count/)).toBeTruthy();
   });
 });
