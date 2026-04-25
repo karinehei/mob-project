@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   Linking,
@@ -100,24 +100,22 @@ export default function AdminScreen({ navigation }: Props): React.JSX.Element {
   const exportOptions =
     exportScope === 'questionnaire' ? questionnaireOptions : sessionOptions;
 
-  useEffect(() => {
-    const loadExportOptions = async () => {
-      setLoadingExportOptions(true);
-      try {
-        const options = await getResultExportOptions();
-        setQuestionnaireOptions(
-          options.questionnaireOptions.map((item) => item.value),
-        );
-        setSessionOptions(options.sessionOptions.map((item) => item.value));
-      } catch {
-        // Keep export section usable even if options loading fails.
-      } finally {
-        setLoadingExportOptions(false);
-      }
-    };
-
-    loadExportOptions().catch(() => undefined);
+  const loadExportOptions = useCallback(async () => {
+    setLoadingExportOptions(true);
+    try {
+      const options = await getResultExportOptions();
+      setQuestionnaireOptions(options.questionnaireOptions.map((item) => item.value));
+      setSessionOptions(options.sessionOptions.map((item) => item.value));
+    } catch {
+      // Keep export section usable even if options loading fails.
+    } finally {
+      setLoadingExportOptions(false);
+    }
   }, []);
+
+  useEffect(() => {
+    loadExportOptions().catch(() => undefined);
+  }, [loadExportOptions]);
 
   useEffect(() => {
     if (exportOptions.length > 0) {
@@ -352,6 +350,27 @@ export default function AdminScreen({ navigation }: Props): React.JSX.Element {
             <Text style={styles.helpText}>
               {t('admin_screen.export_help')}
             </Text>
+            <Pressable
+              style={({ pressed }) => [
+                styles.secondaryButton,
+                styles.refreshExportButton,
+                pressed && !loadingExportOptions && styles.secondaryButtonPressed,
+              ]}
+              onPress={() => {
+                loadExportOptions().catch(() => undefined);
+              }}
+              disabled={loadingExportOptions}
+              accessibilityRole="button"
+              accessibilityLabel={t('admin_screen.export_refresh_aria')}
+            >
+              {loadingExportOptions ? (
+                <ActivityIndicator color={colors.textPrimary} />
+              ) : (
+                <Text style={styles.secondaryButtonLabel}>
+                  {t('admin_screen.export_refresh_button')}
+                </Text>
+              )}
+            </Pressable>
 
             <Text style={styles.label}>{t('admin_screen.export_scope_label')}</Text>
             <View style={styles.toggleWrap}>
@@ -680,6 +699,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: spacing.md,
+  },
+  refreshExportButton: {
+    marginTop: spacing.md,
   },
   secondaryButtonPressed: {
     opacity: 0.92,
