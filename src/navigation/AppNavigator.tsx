@@ -33,7 +33,7 @@ export function AppNavigator(): React.JSX.Element {
   const { t } = useTranslation();
   return (
     <NavigationContainer>
-      <Stack.Navigator initialRouteName="Home">
+      <Stack.Navigator initialRouteName="Home" screenOptions={{ headerBackVisible: false }}>
         <Stack.Screen
           name="Home"
           component={HomeScreen}

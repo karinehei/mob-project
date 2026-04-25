@@ -17,6 +17,7 @@
   "appBar": {
     "title": "Food_Study",
     "menu_accessibility": "Menu",
+    "back_accessibility": "Back",
     "switch_to_finnish": "Switch to Finnish",
     "switch_to_english": "Switch to English"
   },
