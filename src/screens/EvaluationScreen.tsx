@@ -179,11 +179,18 @@ export default function EvaluationScreen({
 
   const canSave =
     Boolean(currentSample) && questionnaireQuestions.length > 0 && !saving;
+  const onBackPress = () => {
+    if (navigation.canGoBack?.()) {
+      navigation.goBack();
+      return;
+    }
+    navigation.navigate('Home');
+  };
 
   if (isLoading) {
     return (
       <ScreenContainer testID="screen-evaluation">
-        <StudyAppBar />
+        <StudyAppBar showBackButton onBackPress={onBackPress} />
         <View style={styles.centerContainer}>
           <ActivityIndicator size="large" color={colors.primary} />
           <Text style={styles.infoText}>{t('eval_screen.loading')}</Text>
@@ -195,7 +202,7 @@ export default function EvaluationScreen({
   if (error) {
     return (
       <ScreenContainer testID="screen-evaluation">
-        <StudyAppBar />
+        <StudyAppBar showBackButton onBackPress={onBackPress} />
         <View style={styles.centerContainer}>
           <Text style={styles.infoText}>{error}</Text>
           <Pressable
@@ -217,7 +224,7 @@ export default function EvaluationScreen({
   if (!currentSample) {
     return (
       <ScreenContainer testID="screen-evaluation">
-        <StudyAppBar />
+        <StudyAppBar showBackButton onBackPress={onBackPress} />
         <View style={styles.centerContainer}>
           <Text style={styles.infoText}>{t('eval_screen.no_sample')}</Text>
           <Pressable
@@ -314,7 +321,7 @@ export default function EvaluationScreen({
   return (
     <ScreenContainer testID="screen-evaluation">
       <View style={styles.root}>
-        <StudyAppBar />
+        <StudyAppBar showBackButton onBackPress={onBackPress} />
 
         <ScrollView
           style={styles.scroll}

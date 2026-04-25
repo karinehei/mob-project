@@ -100,6 +100,8 @@
     "preview_body": "Näytteitä: {{samples}}\nKysymyksiä: {{questions}}",
     "save_manual_aria": "Tallenna käsin luotu kysely",
     "save_manual_button": "Tallenna aktiiviseksi kyselyksi",
+    "error_minimum_scale_questions": "Lisää vähintään neljä asteikkokysymystä (ulkonäkö, tuoksu, maku, rakenne).",
+    "error_import_minimum_scale_questions": "Tuodussa kyselyssä pitää olla vähintään neljä asteikkokysymystä.",
     "import_title": "Tai tuo JSON",
     "import_help": "Tuonti tukee kenttiä `title`, `samples` ja `questions`.",
     "import_aria": "JSON-tuonti",

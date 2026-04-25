@@ -1,3 +1,4 @@
+import i18next from 'i18next';
 import type {
   QuestionnaireDraft,
   QuestionnaireQuestion,
@@ -10,6 +11,11 @@ type ManualQuestionnaireInput = {
   cataQuestionLabel?: string;
   cataOptionsText?: string;
 };
+
+function tWithFallback(key: string, fallback: string): string {
+  const translated = i18next.t(key);
+  return translated === key ? fallback : translated;
+}
 
 export function parseTokenList(input: string): string[] {
   return input
@@ -64,7 +70,10 @@ export function buildQuestionnaireDraftFromManualInput(
   }
   if (scaleQuestions.length < 4) {
     throw new Error(
-      'Lisää vähintään neljä asteikkokysymystä (ulkonäkö, tuoksu, maku, rakenne).',
+      tWithFallback(
+        'admin_screen.error_minimum_scale_questions',
+        'Lisää vähintään neljä asteikkokysymystä (ulkonäkö, tuoksu, maku, rakenne).',
+      ),
     );
   }
   if ((cataLabel && cataOptions.length === 0) || (!cataLabel && cataOptions.length > 0)) {
@@ -173,7 +182,10 @@ export function parseQuestionnaireImport(input: string): QuestionnaireDraft {
 
   if (countScaleQuestions(questions) < 4) {
     throw new Error(
-      'Tuodussa kyselyssä pitää olla vähintään neljä asteikkokysymystä.',
+      tWithFallback(
+        'admin_screen.error_import_minimum_scale_questions',
+        'Tuodussa kyselyssä pitää olla vähintään neljä asteikkokysymystä.',
+      ),
     );
   }
 

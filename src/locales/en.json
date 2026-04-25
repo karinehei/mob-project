@@ -100,6 +100,8 @@
     "preview_body": "Samples: {{samples}}\nQuestions: {{questions}}",
     "save_manual_aria": "Save manually created questionnaire",
     "save_manual_button": "Save as Active Questionnaire",
+    "error_minimum_scale_questions": "Please add at least four scale questions (appearance, aroma, taste, texture).",
+    "error_import_minimum_scale_questions": "The imported questionnaire must include at least four scale questions.",
     "import_title": "Or Import JSON",
     "import_help": "Import supports `title`, `samples` and `questions` fields.",
     "import_aria": "JSON import",

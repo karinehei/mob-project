@@ -1,25 +1,25 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { useNavigation, useRoute } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
-import { RootStackParamList } from '../navigation/AppNavigator';
 import { colors } from '../theme/colors';
 import { spacing } from '../theme/spacing';
 import { typography } from '../theme/typography';
 
+type StudyAppBarProps = {
+  showBackButton?: boolean;
+  onBackPress?: () => void;
+};
+
 /**
  * Tummansininen yläpalkki — sama ulkoasu kaikilla tutkimus-/arviointinäkymillä.
  */
-export function StudyAppBar(): React.JSX.Element {
+export function StudyAppBar({
+  showBackButton = false,
+  onBackPress,
+}: StudyAppBarProps): React.JSX.Element {
   const { t, i18n } = useTranslation();
-  const navigation =
-    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const route = useRoute();
   const activeLanguage = i18n.resolvedLanguage?.startsWith('en') ? 'en' : 'fi';
-  const isHomeScreen = route.name === 'Home';
-  const showBackButton = !isHomeScreen && navigation.canGoBack();
 
   const changeLanguage = (nextLanguage: 'fi' | 'en') => {
     if (activeLanguage === nextLanguage) {
@@ -33,7 +33,8 @@ export function StudyAppBar(): React.JSX.Element {
       {showBackButton ? (
         <Pressable
           style={styles.appBarLeftSlot}
-          onPress={() => navigation.goBack()}
+          onPress={() => onBackPress?.()}
+          disabled={!onBackPress}
           accessibilityRole="button"
           accessibilityLabel={t('appBar.back_accessibility')}
         >

@@ -26,6 +26,13 @@ export default function ResultScreen({
   const primaryCtaLabel = flowCompleted
     ? t('result_screen.new_round')
     : t('result_screen.next_sample');
+  const onBackPress = () => {
+    if (navigation.canGoBack?.()) {
+      navigation.goBack();
+      return;
+    }
+    navigation.navigate('Home');
+  };
 
   const handleNextStep = () => {
     if (flowCompleted) {
@@ -42,7 +49,7 @@ export default function ResultScreen({
   return (
     <ScreenContainer testID="screen-result">
       <View style={styles.root}>
-        <StudyAppBar />
+        <StudyAppBar showBackButton onBackPress={onBackPress} />
 
         <ScrollView
           style={styles.scroll}

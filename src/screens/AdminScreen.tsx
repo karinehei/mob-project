@@ -45,6 +45,13 @@ const IMPORT_PLACEHOLDER = `{
 export default function AdminScreen({ navigation }: Props): React.JSX.Element {
   const { t } = useTranslation();
   const { retryLoadSession } = useSampleContext();
+  const onBackPress = () => {
+    if (navigation.canGoBack?.()) {
+      navigation.goBack();
+      return;
+    }
+    navigation.navigate('Home');
+  };
 
   function getErrorMessage(error: unknown): string {
     if (error instanceof Error && error.message) {
@@ -193,7 +200,7 @@ export default function AdminScreen({ navigation }: Props): React.JSX.Element {
   return (
     <ScreenContainer testID="screen-admin">
       <View style={styles.root}>
-        <StudyAppBar />
+        <StudyAppBar showBackButton onBackPress={onBackPress} />
 
         <ScrollView
           style={styles.scroll}

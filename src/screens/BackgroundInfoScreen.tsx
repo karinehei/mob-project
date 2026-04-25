@@ -39,6 +39,13 @@ export default function BackgroundInfoScreen({
   const [genderKey, setGenderKey] = useState('');
   const [saveError, setSaveError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const onBackPress = () => {
+    if (navigation.canGoBack?.()) {
+      navigation.goBack();
+      return;
+    }
+    navigation.navigate('Home');
+  };
 
   function saveErrorMessage(error: unknown): string {
     if (error instanceof Error && error.message) {
@@ -85,7 +92,7 @@ export default function BackgroundInfoScreen({
   return (
     <ScreenContainer testID="screen-background-info">
       <View style={styles.root}>
-        <StudyAppBar />
+        <StudyAppBar showBackButton onBackPress={onBackPress} />
         <ScrollView
           style={styles.scroll}
           contentContainerStyle={styles.scrollContent}
