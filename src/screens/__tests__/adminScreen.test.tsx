@@ -13,6 +13,10 @@ import {
 jest.mock('react-i18next', () => ({
   useTranslation: () => ({
     t: (key: string) => key,
+    i18n: {
+      resolvedLanguage: 'fi',
+      changeLanguage: jest.fn(async () => undefined),
+    },
   }),
 }));
 
