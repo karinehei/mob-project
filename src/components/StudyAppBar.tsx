@@ -6,20 +6,18 @@ import { colors } from '../theme/colors';
 import { spacing } from '../theme/spacing';
 import { typography } from '../theme/typography';
 
-function MenuIcon(): React.JSX.Element {
-  return (
-    <View style={styles.menuIcon} accessibilityElementsHidden>
-      <View style={styles.menuBar} />
-      <View style={styles.menuBar} />
-      <View style={styles.menuBar} />
-    </View>
-  );
-}
+type StudyAppBarProps = {
+  showBackButton?: boolean;
+  onBackPress?: () => void;
+};
 
 /**
  * Tummansininen yläpalkki — sama ulkoasu kaikilla tutkimus-/arviointinäkymillä.
  */
-export function StudyAppBar(): React.JSX.Element {
+export function StudyAppBar({
+  showBackButton = false,
+  onBackPress,
+}: StudyAppBarProps): React.JSX.Element {
   const { t, i18n } = useTranslation();
   const activeLanguage = i18n.resolvedLanguage?.startsWith('en') ? 'en' : 'fi';
 
@@ -32,14 +30,26 @@ export function StudyAppBar(): React.JSX.Element {
 
   return (
     <View style={styles.appBar}>
-      <Pressable
-        style={styles.appBarIconHit}
-        onPress={() => {}}
-        accessibilityRole="button"
-        accessibilityLabel={t('appBar.menu_accessibility')}
-      >
-        <MenuIcon />
-      </Pressable>
+      {showBackButton ? (
+        <Pressable
+          style={styles.appBarLeftSlot}
+          onPress={() => onBackPress?.()}
+          disabled={!onBackPress}
+          accessibilityRole="button"
+          accessibilityLabel={t('appBar.back_accessibility')}
+        >
+          <View style={styles.backIcon} />
+        </Pressable>
+      ) : (
+        <View style={styles.appBarLeftSlot} accessibilityElementsHidden>
+          <View style={styles.homeIcon}>
+            <View style={styles.homeRoofLeft} />
+            <View style={styles.homeRoofRight} />
+            <View style={styles.homeBody} />
+            <View style={styles.homeDoor} />
+          </View>
+        </View>
+      )}
       <Text style={styles.appBarTitle} numberOfLines={1}>
         {t('appBar.title')}
       </Text>
@@ -103,20 +113,64 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
   },
-  appBarIconHit: {
+  appBarLeftSlot: {
     width: 44,
     height: 44,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  menuIcon: {
-    justifyContent: 'space-between',
-    height: 14,
-    width: 22,
+  backIcon: {
+    width: 12,
+    height: 12,
+    borderLeftWidth: 2.5,
+    borderBottomWidth: 2.5,
+    borderColor: colors.onAppBar,
+    transform: [{ rotate: '45deg' }],
+    marginLeft: 6,
   },
-  menuBar: {
-    height: 3,
-    borderRadius: 1,
+  homeIcon: {
+    width: 18,
+    height: 16,
+    position: 'relative',
+  },
+  homeRoofLeft: {
+    position: 'absolute',
+    top: 1,
+    left: 2,
+    width: 9,
+    height: 2.5,
+    borderRadius: 2,
+    backgroundColor: colors.onAppBar,
+    transform: [{ rotate: '-35deg' }],
+  },
+  homeRoofRight: {
+    position: 'absolute',
+    top: 1,
+    right: 2,
+    width: 9,
+    height: 2.5,
+    borderRadius: 2,
+    backgroundColor: colors.onAppBar,
+    transform: [{ rotate: '35deg' }],
+  },
+  homeBody: {
+    position: 'absolute',
+    left: 3,
+    right: 3,
+    bottom: 0,
+    top: 6,
+    borderRadius: 2,
+    borderWidth: 2,
+    borderColor: colors.onAppBar,
+  },
+  homeDoor: {
+    position: 'absolute',
+    bottom: 0,
+    alignSelf: 'center',
+    width: 4,
+    height: 6,
+    borderTopLeftRadius: 1,
+    borderTopRightRadius: 1,
     backgroundColor: colors.onAppBar,
   },
   appBarTitle: {

@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   Linking,
@@ -32,19 +32,16 @@ import { useSampleContext } from '../context/SampleContext';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Admin'>;
 
-const IMPORT_PLACEHOLDER = `{
-  "title": "Jogurttitesti",
-  "samples": ["451", "926", "780"],
-  "questions": [
-    { "label": "Ulkonäkö", "type": "scale", "minScore": 0, "maxScore": 10 },
-    { "label": "Tuoksu", "type": "scale", "minScore": 0, "maxScore": 10 },
-    { "label": "Havaitut ominaisuudet", "type": "multiSelect", "options": ["makea", "hapan", "pehmeä"] }
-  ]
-}`;
-
 export default function AdminScreen({ navigation }: Props): React.JSX.Element {
   const { t } = useTranslation();
   const { retryLoadSession } = useSampleContext();
+  const onBackPress = () => {
+    if (navigation.canGoBack?.()) {
+      navigation.goBack();
+      return;
+    }
+    navigation.navigate('Home');
+  };
 
   function getErrorMessage(error: unknown): string {
     if (error instanceof Error && error.message) {
@@ -103,24 +100,22 @@ export default function AdminScreen({ navigation }: Props): React.JSX.Element {
   const exportOptions =
     exportScope === 'questionnaire' ? questionnaireOptions : sessionOptions;
 
-  useEffect(() => {
-    const loadExportOptions = async () => {
-      setLoadingExportOptions(true);
-      try {
-        const options = await getResultExportOptions();
-        setQuestionnaireOptions(
-          options.questionnaireOptions.map((item) => item.value),
-        );
-        setSessionOptions(options.sessionOptions.map((item) => item.value));
-      } catch {
-        // Keep export section usable even if options loading fails.
-      } finally {
-        setLoadingExportOptions(false);
-      }
-    };
-
-    loadExportOptions().catch(() => undefined);
+  const loadExportOptions = useCallback(async () => {
+    setLoadingExportOptions(true);
+    try {
+      const options = await getResultExportOptions();
+      setQuestionnaireOptions(options.questionnaireOptions.map((item) => item.value));
+      setSessionOptions(options.sessionOptions.map((item) => item.value));
+    } catch {
+      // Keep export section usable even if options loading fails.
+    } finally {
+      setLoadingExportOptions(false);
+    }
   }, []);
+
+  useEffect(() => {
+    loadExportOptions().catch(() => undefined);
+  }, [loadExportOptions]);
 
   useEffect(() => {
     if (exportOptions.length > 0) {
@@ -152,8 +147,10 @@ export default function AdminScreen({ navigation }: Props): React.JSX.Element {
 
       const questionnaireId = await saveQuestionnaire(draft);
       await retryLoadSession();
-      setStatusMessage(t('admin_screen.save_success', { id: questionnaireId }));
-      navigation.navigate('Home');
+      setStatusMessage(
+        t('admin_screen.save_success_with_export_hint', { id: questionnaireId }),
+      );
+      await loadExportOptions();
     } catch (error) {
       setErrorMessage(getErrorMessage(error));
     } finally {
@@ -182,7 +179,7 @@ export default function AdminScreen({ navigation }: Props): React.JSX.Element {
         });
       }
 
-      setStatusMessage(`Vienti valmis: ${result.filename}`);
+      setStatusMessage(t('admin_screen.export_done', { filename: result.filename }));
     } catch (error) {
       setErrorMessage(getErrorMessage(error));
     } finally {
@@ -193,7 +190,7 @@ export default function AdminScreen({ navigation }: Props): React.JSX.Element {
   return (
     <ScreenContainer testID="screen-admin">
       <View style={styles.root}>
-        <StudyAppBar />
+        <StudyAppBar showBackButton onBackPress={onBackPress} />
 
         <ScrollView
           style={styles.scroll}
@@ -225,6 +222,8 @@ export default function AdminScreen({ navigation }: Props): React.JSX.Element {
             <TextInput
               value={title}
               onChangeText={setTitle}
+              autoCorrect={false}
+              spellCheck={false}
               placeholder={t('admin_screen.placeholder_name')}
               placeholderTextColor={colors.textMuted}
               style={styles.input}
@@ -235,6 +234,8 @@ export default function AdminScreen({ navigation }: Props): React.JSX.Element {
             <TextInput
               value={samplesText}
               onChangeText={setSamplesText}
+              autoCorrect={false}
+              spellCheck={false}
               placeholder={t('admin_screen.placeholder_samples')}
               placeholderTextColor={colors.textMuted}
               multiline
@@ -248,6 +249,8 @@ export default function AdminScreen({ navigation }: Props): React.JSX.Element {
             <TextInput
               value={scaleQuestionsText}
               onChangeText={setScaleQuestionsText}
+              autoCorrect={false}
+              spellCheck={false}
               placeholder={t('admin_screen.placeholder_scale_questions')}
               placeholderTextColor={colors.textMuted}
               multiline
@@ -261,6 +264,8 @@ export default function AdminScreen({ navigation }: Props): React.JSX.Element {
             <TextInput
               value={cataQuestionLabel}
               onChangeText={setCataQuestionLabel}
+              autoCorrect={false}
+              spellCheck={false}
               placeholder={t('admin_screen.placeholder_cata_question')}
               placeholderTextColor={colors.textMuted}
               style={styles.input}
@@ -273,6 +278,8 @@ export default function AdminScreen({ navigation }: Props): React.JSX.Element {
             <TextInput
               value={cataOptionsText}
               onChangeText={setCataOptionsText}
+              autoCorrect={false}
+              spellCheck={false}
               placeholder={t('admin_screen.placeholder_cata_options')}
               placeholderTextColor={colors.textMuted}
               multiline
@@ -325,7 +332,9 @@ export default function AdminScreen({ navigation }: Props): React.JSX.Element {
             <TextInput
               value={importText}
               onChangeText={setImportText}
-              placeholder={IMPORT_PLACEHOLDER}
+              autoCorrect={false}
+              spellCheck={false}
+              placeholder={t('admin_screen.import_placeholder_json')}
               placeholderTextColor={colors.textMuted}
               multiline
               style={[styles.input, styles.importArea]}
@@ -351,13 +360,33 @@ export default function AdminScreen({ navigation }: Props): React.JSX.Element {
           </View>
 
           <View style={styles.card}>
-            <Text style={styles.cardTitle}>Tulosten vienti</Text>
+            <Text style={styles.cardTitle}>{t('admin_screen.export_title')}</Text>
             <Text style={styles.helpText}>
-              Valitse kysely tai tutkimussessio ja lataa tulokset
-              CSV/XLS-muotoon.
+              {t('admin_screen.export_help')}
             </Text>
+            <Pressable
+              style={({ pressed }) => [
+                styles.secondaryButton,
+                styles.refreshExportButton,
+                pressed && !loadingExportOptions && styles.secondaryButtonPressed,
+              ]}
+              onPress={() => {
+                loadExportOptions().catch(() => undefined);
+              }}
+              disabled={loadingExportOptions}
+              accessibilityRole="button"
+              accessibilityLabel={t('admin_screen.export_refresh_aria')}
+            >
+              {loadingExportOptions ? (
+                <ActivityIndicator color={colors.textPrimary} />
+              ) : (
+                <Text style={styles.secondaryButtonLabel}>
+                  {t('admin_screen.export_refresh_button')}
+                </Text>
+              )}
+            </Pressable>
 
-            <Text style={styles.label}>Vientikohde</Text>
+            <Text style={styles.label}>{t('admin_screen.export_scope_label')}</Text>
             <View style={styles.toggleWrap}>
               <Pressable
                 style={({ pressed }) => [
@@ -370,7 +399,7 @@ export default function AdminScreen({ navigation }: Props): React.JSX.Element {
                 accessibilityState={{
                   selected: exportScope === 'questionnaire',
                 }}
-                accessibilityLabel="Valitse vientikohteeksi kysely"
+                accessibilityLabel={t('admin_screen.export_scope_questionnaire_aria')}
               >
                 <View
                   style={[
@@ -391,7 +420,7 @@ export default function AdminScreen({ navigation }: Props): React.JSX.Element {
                       styles.toggleChipTextSelected,
                   ]}
                 >
-                  Kysely
+                  {t('admin_screen.export_scope_questionnaire')}
                 </Text>
               </Pressable>
               <Pressable
@@ -403,7 +432,7 @@ export default function AdminScreen({ navigation }: Props): React.JSX.Element {
                 onPress={() => setExportScope('session')}
                 accessibilityRole="radio"
                 accessibilityState={{ selected: exportScope === 'session' }}
-                accessibilityLabel="Valitse vientikohteeksi tutkimussessio"
+                accessibilityLabel={t('admin_screen.export_scope_session_aria')}
               >
                 <View
                   style={[
@@ -422,15 +451,15 @@ export default function AdminScreen({ navigation }: Props): React.JSX.Element {
                     exportScope === 'session' && styles.toggleChipTextSelected,
                   ]}
                 >
-                  Sessio
+                  {t('admin_screen.export_scope_session')}
                 </Text>
               </Pressable>
             </View>
 
             <Text style={styles.label}>
               {exportScope === 'questionnaire'
-                ? 'Valitse kysely'
-                : 'Valitse sessio'}
+                ? t('admin_screen.export_select_questionnaire')
+                : t('admin_screen.export_select_session')}
             </Text>
             {loadingExportOptions ? (
               <View style={styles.inlineLoader}>
@@ -438,7 +467,7 @@ export default function AdminScreen({ navigation }: Props): React.JSX.Element {
               </View>
             ) : exportOptions.length === 0 ? (
               <Text style={styles.helpText}>
-                Ei vietäviä kohteita. Tallenna ensin vastaussessioita.
+                {t('admin_screen.export_no_items')}
               </Text>
             ) : (
               <View style={styles.optionsWrap}>
@@ -455,7 +484,7 @@ export default function AdminScreen({ navigation }: Props): React.JSX.Element {
                       onPress={() => setSelectedExportValue(value)}
                       accessibilityRole="radio"
                       accessibilityState={{ selected }}
-                      accessibilityLabel={`Vientikohde: ${value}`}
+                      accessibilityLabel={t('admin_screen.export_target_aria', { value })}
                     >
                       <View
                         style={[
@@ -480,7 +509,7 @@ export default function AdminScreen({ navigation }: Props): React.JSX.Element {
               </View>
             )}
 
-            <Text style={styles.label}>Tiedostomuoto</Text>
+            <Text style={styles.label}>{t('admin_screen.export_format_label')}</Text>
             <View style={styles.toggleWrap}>
               <Pressable
                 style={({ pressed }) => [
@@ -491,7 +520,7 @@ export default function AdminScreen({ navigation }: Props): React.JSX.Element {
                 onPress={() => setExportFormat('csv')}
                 accessibilityRole="radio"
                 accessibilityState={{ selected: exportFormat === 'csv' }}
-                accessibilityLabel="Valitse tiedostomuodoksi CSV"
+                accessibilityLabel={t('admin_screen.export_format_csv_aria')}
               >
                 <View
                   style={[
@@ -520,7 +549,7 @@ export default function AdminScreen({ navigation }: Props): React.JSX.Element {
                 onPress={() => setExportFormat('xls')}
                 accessibilityRole="radio"
                 accessibilityState={{ selected: exportFormat === 'xls' }}
-                accessibilityLabel="Valitse tiedostomuodoksi XLS"
+                accessibilityLabel={t('admin_screen.export_format_xls_aria')}
               >
                 <View
                   style={[
@@ -556,12 +585,14 @@ export default function AdminScreen({ navigation }: Props): React.JSX.Element {
               }}
               disabled={exporting || !selectedExportValue}
               accessibilityRole="button"
-              accessibilityLabel="Käynnistä tulosten vienti"
+              accessibilityLabel={t('admin_screen.export_start_aria')}
             >
               {exporting ? (
                 <ActivityIndicator color={colors.onPrimary} />
               ) : (
-                <Text style={styles.primaryButtonLabel}>Lataa tulokset</Text>
+                <Text style={styles.primaryButtonLabel}>
+                  {t('admin_screen.export_download_button')}
+                </Text>
               )}
             </Pressable>
           </View>
@@ -682,6 +713,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: spacing.md,
+  },
+  refreshExportButton: {
+    marginTop: spacing.md,
   },
   secondaryButtonPressed: {
     opacity: 0.92,

@@ -39,6 +39,7 @@ describe('resultsExportService', () => {
       { value: 'sess-1', label: 'sess-1', count: 2 },
       { value: 'sess-2', label: 'sess-2', count: 1 },
     ]);
+    expect(mockGetDocs).toHaveBeenCalledTimes(1);
   });
 
   it('exports CSV content for selected questionnaire', async () => {
@@ -72,6 +73,7 @@ describe('resultsExportService', () => {
     expect(result.content).toContain('sampleCode');
     expect(result.content).toContain('451');
     expect(result.content).toContain('makea|hapan');
+    expect(mockGetDocs).toHaveBeenCalledTimes(1);
   });
 
   it('exports XLS-compatible content for selected session', async () => {
@@ -103,5 +105,31 @@ describe('resultsExportService', () => {
     expect(result.filename).toContain('.xls');
     expect(result.mimeType).toBe('application/vnd.ms-excel');
     expect(result.content).toContain('\t');
+    expect(mockGetDocs).toHaveBeenCalledTimes(1);
+  });
+
+  it('falls back to evaluations when response sessions are not aggregated yet', async () => {
+    mockGetDocs
+      .mockResolvedValueOnce({ docs: [] })
+      .mockResolvedValueOnce({
+        docs: [
+          {
+            data: () => ({
+              questionnaireTitle: 'Jogurttitesti',
+              sessionId: 'sess-1',
+            }),
+          },
+        ],
+      });
+
+    const options = await getResultExportOptions();
+
+    expect(options.questionnaireOptions).toEqual([
+      { value: 'Jogurttitesti', label: 'Jogurttitesti', count: 1 },
+    ]);
+    expect(options.sessionOptions).toEqual([
+      { value: 'sess-1', label: 'sess-1', count: 1 },
+    ]);
+    expect(mockGetDocs).toHaveBeenCalledTimes(2);
   });
 });

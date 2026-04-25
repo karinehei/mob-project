@@ -10,6 +10,16 @@ import {
   getResultExportOptions,
 } from '../../services/resultsExportService';
 
+jest.mock('react-i18next', () => ({
+  useTranslation: () => ({
+    t: (key: string) => key,
+    i18n: {
+      resolvedLanguage: 'fi',
+      changeLanguage: jest.fn(async () => undefined),
+    },
+  }),
+}));
+
 jest.mock('../../context/SampleContext', () => ({
   useSampleContext: jest.fn(),
 }));
@@ -80,9 +90,9 @@ describe('AdminScreen', () => {
       expect(mockGetResultExportOptions).toHaveBeenCalledTimes(1);
     });
 
-    const optionChip = await findByLabelText('Vientikohde: Jogurttitesti');
+    const optionChip = await findByLabelText('admin_screen.export_target_aria');
     fireEvent.press(optionChip);
-    fireEvent.press(getByLabelText('Käynnistä tulosten vienti'));
+    fireEvent.press(getByLabelText('admin_screen.export_start_aria'));
 
     await waitFor(() => {
       expect(mockExportResults).toHaveBeenCalledWith(
