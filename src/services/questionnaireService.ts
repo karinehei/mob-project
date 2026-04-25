@@ -15,12 +15,25 @@ import type { QuestionnaireDraft } from '../types/questionnaire';
 function sanitizeDraft(input: QuestionnaireDraft): QuestionnaireDraft {
   const title = input.title.trim();
   const samples = input.samples.map((item) => item.trim()).filter(Boolean);
-  const questions = input.questions.map((question) => ({
-    ...question,
-    id: question.id.trim(),
-    label: question.label.trim(),
-    options: question.options?.map((item) => item.trim()).filter(Boolean),
-  }));
+  const questions = input.questions.map((question) => {
+    const baseQuestion = {
+      ...question,
+      id: question.id.trim(),
+      label: question.label.trim(),
+    };
+
+    if (question.type === 'multiSelect') {
+      const options = (question.options ?? []).map((item) => item.trim()).filter(Boolean);
+      return {
+        ...baseQuestion,
+        options,
+      };
+    }
+
+    // Firestore rejects undefined values, so avoid writing optional keys with undefined.
+    const { options: _ignoredOptions, ...scaleQuestion } = baseQuestion;
+    return scaleQuestion;
+  });
 
   if (!title) {
     throw new Error('Kyselyn nimi puuttuu.');
