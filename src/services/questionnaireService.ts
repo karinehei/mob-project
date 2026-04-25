@@ -31,7 +31,8 @@ function sanitizeDraft(input: QuestionnaireDraft): QuestionnaireDraft {
     }
 
     // Firestore rejects undefined values, so avoid writing optional keys with undefined.
-    const { options: _ignoredOptions, ...scaleQuestion } = baseQuestion;
+    const scaleQuestion = { ...baseQuestion };
+    delete scaleQuestion.options;
     return scaleQuestion;
   });
 
